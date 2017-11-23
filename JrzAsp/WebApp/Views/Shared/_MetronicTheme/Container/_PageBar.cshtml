@@ -1,0 +1,83 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms.Vue.Models
+<!-- BEGIN PAGE BAR -->
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        @{
+            var allBreadcrumbs = MetronicBreadcrumbs.Breadcrumbs
+                .Where(x => !string.IsNullOrWhiteSpace(x?.Label)).ToArray();
+            var countBreadcrumbs = allBreadcrumbs.Length;
+        }
+        <li>
+            <a href="@Url.CmsDashUrl()">Home</a>
+            @if (countBreadcrumbs > 0) {
+                <i class="fa fa-circle"></i>
+            }
+        </li>
+        @for (var i = 0; i < countBreadcrumbs; i++) {
+            var bcm = allBreadcrumbs[i];
+            <li id="@bcm.HtmlId">
+                @if (string.IsNullOrWhiteSpace(bcm.Href)) {
+                    <span>@bcm.Label</span>
+                } else {
+                    <a href="@bcm.Href">@bcm.Label</a>
+                }
+                @if (i < countBreadcrumbs - 1) {
+                    <i class="fa fa-circle"></i>
+                }
+            </li>
+        }
+    </ul>
+    <div class="page-toolbar">
+        @{
+            var allPageActions = MetronicPageActions.PageActions
+                .Where(x => !string.IsNullOrWhiteSpace(x?.Label)).ToArray();
+            var countPageActions = allPageActions.Length;
+        }
+        @if (countPageActions > 0) {
+            <div class="btn-group pull-right">
+                <button type="button" class="btn green btn-sm btn-outline dropdown-toggle" data-toggle="dropdown">
+                    Actions
+                    <i class="fa fa-angle-down"></i>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    @foreach (var pa in allPageActions) {
+                        <li id="@pa.HtmlId">
+                            @if (pa is VueLink) {
+                                var paLink = pa.DirectCastTo<VueLink>();
+                                <a href="@paLink.Href">
+                                    <i class="@pa.IconCssClass"></i>
+                                    @pa.Label
+                                </a>
+                            } else if (pa is VueButton) {
+                                var paBtn = pa.DirectCastTo<VueButton>();
+                                var metaId = $"page-action-meta-id-{Randomer.Self.Next()}";
+                                <a href="#" data-page-action-meta-id="@metaId" data-vue-button-on-click="@paBtn.OnClick">
+                                    <i class="@pa.IconCssClass"></i>
+                                    @pa.Label
+                                </a>
+                                using (Html.AtOtherScripts()) {
+                                    <script type="text/javascript">
+                                        $(function() {
+                                            $("a[data-page-action-meta-id='@metaId']").click(function(e) {
+                                                e.preventDefault();
+                                                @Html.Raw(paBtn.OnClick);
+                                            });
+                                        })
+                                    </script>
+                                }
+                            } else {
+                                <span>
+                                    <i class="@pa.IconCssClass"></i>
+                                    @pa.Label
+                                </span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+<!-- END PAGE BAR -->

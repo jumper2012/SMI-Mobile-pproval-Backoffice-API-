@@ -1,0 +1,54 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Areas.CmsDash.Models
+@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms.Core.Models
+@using JrzAsp.Lib.ProtoCms.Datum.API
+@using JrzAsp.Lib.ProtoCms.Vue.Models
+@model DataViewModel
+@{
+    var rctx = ProtoCmsRuntimeContext.Current;
+    var dtt = Model.DatumType;
+    ViewBag.Title = dtt.Name;
+    ViewBag.Subtitle = $"Data ({dtt.Id})";
+
+    MetronicBreadcrumbs.Breadcrumbs.AddLast(new VueLink {
+        Label = dtt.Name
+    });
+
+    var tas = dtt.FinderBase().TableActionsForNoContent(rctx);
+    foreach (var ta in tas) {
+        MetronicPageActions.PageActions.AddLast(ta);
+    }
+
+    var rnd = Randomer.Self.Next();
+    var vueId = $"vue-{rnd}";
+    var vueTplId = $"vue-tpl-{rnd}";
+}
+
+<div class="note note-info">
+    @Html.Raw(dtt.Description)
+</div>
+
+<div id="@vueId"></div>
+
+@using (Html.AtOtherScripts()) {
+    <script type="text/x-template" id="@vueTplId">
+        <cms-page-entity entity-api-name="datum"
+                         :entity-type-name="datumTypeName"
+                         :entity-type-id="datumTypeId"
+                         :table-action-column-name="tableActionColumnName" />
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            protoCms.vues.manageDatumPage = new Vue({
+                el: 'div#@vueId',
+                template: '#@vueTplId',
+                data: {
+                    datumTypeName: '@dtt.Name',
+                    datumTypeId: '@dtt.Id',
+                    tableActionColumnName: '@DatumListApiResult.DATUM_TABLE_ACTION_KEY'
+                }
+            });
+        });
+    </script>
+}

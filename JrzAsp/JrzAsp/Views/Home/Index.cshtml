@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Title = "Home";
+}
+
+<h2>Home</h2>
+
+<p>
+    This is where the magic begins!
+</p>
+
+@using (Html.Section("scripts")) {
+    <script>
+        console.log("JrzAsp.Lib.RazorTools works well!");
+    </script>
+}
+
+<table class="table table-condensed table-bordered">
+    <tr>
+        <td>
+            <a href="@Url.Action("Index", "CaptchaFieldTest", new {area = ""})" class="btn btn-default">Captcha Field Test</a>
+        </td>
+    </tr>
+</table>

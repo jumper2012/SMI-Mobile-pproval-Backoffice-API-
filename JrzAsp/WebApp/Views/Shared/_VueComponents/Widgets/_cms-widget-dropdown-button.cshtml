@@ -1,0 +1,54 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="btn-group">
+            <a class="btn dropdown-toggle" :class="btnCssClass" data-toggle="dropdown" href="javascript:;">
+                <span v-html="label"></span>
+                <i :class="iconCssClass"></i>
+            </a>
+            <ul class="dropdown-menu">
+                <li v-for="(mi,idx) in items" :key="idx">
+                    <a v-if="mi.OnClick" href="#" @@click.prevent="clickMenuItem(mi)" :id="mi.HtmlId" :data-vue-button-on-click="mi.OnClick">
+                        <i :class="mi.IconCssClass"></i> {{ mi.Label }}
+                    </a>
+                    <a v-else :href="mi.Href" :target="mi.HtmlTarget" :id="mi.HtmlId">
+                        <i :class="mi.IconCssClass"></i> {{ mi.Label }}
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-widget-dropdown-button',
+                template: '#@tplId',
+                props: ['label','iconCssClass','size','type','extraCssClass', 'items'],
+                data: function() {
+                    return {}
+                },
+                computed: {
+                    btnCssClass: function () {
+                        var sz = putils.getdef(this.size, '');
+                        var btnSize = sz.length > 0 ? 'btn-' + sz : '';
+                        var ty = putils.getdef(this.type, '');
+                        var btnType = ty.length > 0 ? 'btn-' + ty : 'btn-default';
+                        return this.extraCssClass + ' ' + btnSize + ' ' + btnType;
+                    }
+                },
+                methods: {
+                    clickMenuItem: function(item) {
+                        eval(item.OnClick);
+                    }
+                }
+            }
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

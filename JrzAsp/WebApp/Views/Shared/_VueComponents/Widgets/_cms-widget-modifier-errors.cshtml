@@ -1,0 +1,90 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="alert alert-block alert-danger fade in" v-show="hasError">
+            <h4 class="alert-heading" v-show="displayTitle.length > 0">{{ displayTitle }}</h4>
+            <!--<p v-html="errorJsonString"></p>-->
+            <ul class="list-group">
+                <li class="list-group-item" v-show="errorMessage">{{ errorMessage }}</li>
+                <template v-for="(errs, field) in extractedErrorInfo">
+                    <li class="list-group-item" v-for="(errmsg, idx) in errs" :key="field + idx">
+                        <span >{{ errmsg }}</span>
+                        <code v-show="field" class="text-danger small" style="float: right;">{{ field }}</code>
+                    </li>
+                </template>
+            </ul>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-widget-modifier-errors',
+                template: '#@tplId',
+                props: ['errorObject', 'title'],
+                data: function() {
+                    return {}
+                },
+                computed: {
+                    displayTitle: function() {
+                        if (this.title === undefined) {
+                            return "Error!";
+                        }
+                        return this.title;
+                    },
+                    isErrorDefined: function () {
+                        return this.errorObject !== null && this.errorObject !== undefined &&
+                            this.errorJsonString !== '{}';
+                    },
+                    hasError: function() {
+                        if (!this.isErrorDefined) {
+                            return false;
+                        }
+                        return !this.errorObject.IsSuccess;
+                    },
+                    errorJsonString: function () {
+                        var self = this;
+                        return JSON.stringify(self.errorObject);
+                    },
+                    errorMessage: function() {
+                        if (!this.isErrorDefined) {
+                            return "";
+                        }
+                        var errMsgs = [];
+                        if (_.has(this.errorObject, 'responseJSON')) {
+                            if (putils.getdef(this.errorObject.responseJSON.Message, "").length > 0) {
+                                errMsgs.push(this.errorObject.responseJSON.Message);
+                            }
+                            if (putils.getdef(this.errorObject.responseJSON.ErrorMessage, "").length > 0) {
+                                errMsgs.push(this.errorObject.responseJSON.ErrorMessage);
+                            }
+                        }
+                        if (_.has(this.errorObject, 'status')) {
+                                errMsgs.push('HTTP Status '+this.errorObject.status);
+                        }
+                        if (_.has(this.errorObject, 'statusText')) {
+                            errMsgs.push(this.errorObject.statusText);
+                        }
+                        return errMsgs.join('; ');
+                    },
+                    extractedErrorInfo: function() {
+                        if (!this.isErrorDefined) {
+                            return null;
+                        }
+                        var errobj = _.get(this.errorObject, "ValidationResult.Errors");
+                        if (!errobj) {
+                            return null;
+                        }
+                        return errobj;
+                    }
+                }
+            }
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

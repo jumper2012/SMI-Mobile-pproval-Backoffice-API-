@@ -1,0 +1,32 @@
+﻿@using JrzAsp.Lib.ProtoCms.Vue.Models
+@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    ViewBag.Title = "File Explorer";
+    ViewBag.Subtitle = "Manage files & directories of the website.";
+
+    MetronicBreadcrumbs.Breadcrumbs.AddLast(new VueLink {
+        Label = "File Explorer"
+    });
+
+    var rnd = Randomer.Self.Next();
+    var vueId = $"file-explorer-vue-{rnd}";
+    var vueTplId = $"vue-tpl-{rnd}";
+}
+
+<div id="@vueId"></div>
+
+@using (Html.AtOtherScripts()) {
+    <script type="text/x-template" id="@vueTplId">
+        <cms-page-file-explorer></cms-page-file-explorer>
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            protoCms.vues.fileExplorerPage = new Vue({
+                el: '#@vueId',
+                template: '#@vueTplId',
+                data: {}
+            });
+        })
+    </script>
+}

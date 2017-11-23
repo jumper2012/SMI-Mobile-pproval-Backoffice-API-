@@ -1,0 +1,101 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="modal fade" tabindex="-1" data-replace="true" ref="modalRoot" data-bootstrap-modal="1">
+            <div class="modal-dialog" :class="fullWidthCssClass">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" aria-hidden="true" @@click="hideModal"></button>
+                        <h4 class="modal-title">
+                            <slot name="title"></slot>
+                        </h4>
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot></slot>
+                    </div>
+                    <div v-if="showFooter" class="modal-footer">
+                        <slot name="footer"></slot>
+                        <button v-if="showBottomCloseButton" type="button" class="btn btn-default" @@click="hideModal">
+                            Close
+                            <i class="fa fa-close"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            var putils = protoCms.utils;
+            var shownModals = protoCms.vues.shownModals;
+            var comp = {
+                name: 'cms-widget-modal',
+                template: '#@tplId',
+                props: ['showBottomCloseButton', 'fullWidth', 'showFooter'],
+                data: function() {
+                    return {
+                        modalMounted: false,
+                        positioningCronHandler: null
+                    };
+                },
+                computed: {
+                    fullWidthCssClass: function() {
+                        return this.fullWidth ? 'modal-full' : '';
+                    }
+                },
+                methods: {
+                    modalObj: function() {
+                        var jqmdl = $(this.$refs.modalRoot);
+                        return jqmdl;
+                    },
+                    showModal: function() {
+                        if (!this.modalMounted) return;
+                        this.modalObj().modal('show');
+                    },
+                    hideModal: function () {
+                        if (!this.modalMounted) return;
+                        this.modalObj().modal('hide');
+                    }
+                },
+                mounted: function () {
+                    var self = this;
+                    self.modalObj().modal({
+                        show: false,
+                        keyboard: false
+                    });
+                    self.modalObj().on('hidden.bs.modal', function() {
+                        _.remove(shownModals, function(m) {
+                            return m === self.$refs.modalRoot;
+                        });
+                    });
+                    self.modalObj().on('show.bs.modal', function() {
+                        shownModals.push(self.$refs.modalRoot);
+                    });
+
+                    self.positioningCronHandler = window.setInterval(function() {
+                        self.modalObj().modal('handleUpdate');
+                    }, 333);
+
+                    self.modalMounted = true;
+                },
+                destroyed: function () {
+                    var self = this;
+                    _.remove(shownModals, function(m) {
+                        return m === self.$refs.modalRoot;
+                    });
+                    if (self.positioningCronHandler !== null) {
+                        window.clearInterval(self.positioningCronHandler);
+                        self.positioningCronHandler = null;
+                    }
+                }
+            };
+
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

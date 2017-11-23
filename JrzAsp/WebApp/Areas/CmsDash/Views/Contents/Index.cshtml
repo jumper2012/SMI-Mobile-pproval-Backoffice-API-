@@ -1,0 +1,57 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Areas.CmsDash.Models
+@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms.Content.API
+@using JrzAsp.Lib.ProtoCms.Core.Models
+@using JrzAsp.Lib.ProtoCms.Datum.API
+@using JrzAsp.Lib.ProtoCms.Vue.Models
+@model ContentsViewModel
+@{
+    var rctx = ProtoCmsRuntimeContext.Current;
+    var ctt = Model.ContentType;
+    ViewBag.Title = ctt.Name;
+    ViewBag.Subtitle = $"Content ({ctt.Id})";
+
+    MetronicBreadcrumbs.Breadcrumbs.AddLast(new VueLink {
+        Label = ctt.Name
+    });
+
+    var tas = ctt.Finder().TableActionsForNoContent(rctx);
+    foreach (var ta in tas)
+    {
+        MetronicPageActions.PageActions.AddLast(ta);
+    }
+
+    var rnd = Randomer.Self.Next();
+    var vueId = $"vue-{rnd}";
+    var vueTplId = $"vue-tpl-{rnd}";
+}
+
+<div class="note note-info">
+    @Html.Raw(ctt.Description)
+</div>
+
+<div id="@vueId"></div>
+
+@using (Html.AtOtherScripts())
+{
+    <script type="text/x-template" id="@vueTplId">
+        <cms-page-entity entity-api-name="content"
+                         :entity-type-name="contentTypeName"
+                         :entity-type-id="contentTypeId"
+                         :table-action-column-name="tableActionColumnName" />
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            protoCms.vues.manageContentPage = new Vue({
+                el: 'div#@vueId',
+                template: '#@vueTplId',
+                data: {
+                    contentTypeName: '@ctt.Name',
+                    contentTypeId: '@ctt.Id',
+                    tableActionColumnName: '@ContentListApiResult.CONTENT_TABLE_ACTION_KEY'
+                }
+            });
+        });
+    </script>
+}

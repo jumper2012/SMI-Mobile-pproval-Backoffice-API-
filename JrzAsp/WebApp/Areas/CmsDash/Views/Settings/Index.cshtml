@@ -1,0 +1,49 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using Newtonsoft.Json
+@using WebApp.Areas.CmsDash.Models
+@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms.Vue.Models
+@model SettingViewModel
+@{
+    var stgMgr = Model.SettingManager;
+    var stgId = Model.SettingId;
+
+    // will trigger bad request if no setting found with that id
+    var stgObj = stgMgr.GetSetting(stgId, true);
+    var stgSpec = stgMgr.SettingSpecs.First(x => x.Id == stgId);
+
+    ViewBag.Title = stgSpec.Name;
+    ViewBag.Subtitle = "Site Setting";
+    MetronicBreadcrumbs.Breadcrumbs.AddLast(new VueLink {
+        Label = stgSpec.Name
+    });
+
+    var rnd = Randomer.Self.Next();
+    var vueId = $"vue-{rnd}";
+    var vueTplId = $"vue-tpl-{rnd}";
+}
+
+<div class="note note-info">
+    @Html.Raw(stgSpec.Description)
+</div>
+<div id="@vueId"></div>
+
+@using (Html.AtOtherScripts()) {
+    <script type="text/x-template" id="@vueTplId">
+        <cms-page-setting :setting-name="settingName" :setting-id="settingId"
+                          :setting-initial-object="settingInitialObject"/>
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            protoCms.vues.manageSiteSettingPage = new Vue({
+                el: 'div#@vueId',
+                template: '#@vueTplId',
+                data: {
+                    settingName: '@stgSpec.Name',
+                    settingId: '@stgId',
+                    settingInitialObject: @Html.Raw(JsonConvert.SerializeObject(stgObj))
+                }
+            });
+        });
+    </script>
+}

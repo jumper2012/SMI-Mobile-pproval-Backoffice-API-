@@ -1,0 +1,463 @@
+﻿@using JrzAsp.Lib.ProtoCms
+@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+    var rootWebPath = Url.Content("~");
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="form-group">
+            <label v-html="label"></label>
+            <div v-if="!isMultiSelect">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="button" @@click="toggleShowPicker()">
+                            Pick <i class="fa fa-file-o"></i>
+                        </button>
+                        <button class="btn btn-default" type="button" v-if="isLoading">
+                            <i class="fa fa-spin fa-spinner"></i>
+                        </button>
+                    </span>
+                    <div v-if="chosenOption" class="form-control form-control-static">
+                        <a :href="'@rootWebPath' + chosenOption.DownloadPath" target="_blank">{{ chosenOption.WebPath }}</a>
+                    </div>
+                    <div v-else class="form-control form-control-static">
+                        <em>-n/a-</em>
+                    </div>
+                    <span class="input-group-btn">
+                        <button class="btn btn-warning" type="button" @@click="clearChosenOption()">
+                            Clear <i class="fa fa-close"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div v-else>
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="button" @@click="toggleShowPicker()">
+                            Pick <i class="fa fa-files-o"></i>
+                        </button>
+                        <button class="btn green" type="button" @@click="toggleShowChosen()">
+                            View Picked <i class="fa fa-eye"></i>
+                        </button>
+                        <button class="btn btn-default" type="button" v-if="isLoading">
+                            <i class="fa fa-spin fa-spinner"></i>
+                        </button>
+                    </span>
+                    <div class="form-control form-control-static">
+                        Picked {{ addedObjects.length }} file{{ addedObjects.length > 1 ? 's' : '' }}
+                    </div>
+                    <span class="input-group-btn">
+                        <button class="btn btn-warning" type="button" @@click="clearChosenOption()">
+                            Clear <i class="fa fa-close"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            
+            <div v-if="isMultiSelect" v-show="chosenShown" class="well">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <cms-widget-modifier-errors :error-object="loadError" title=""/>
+                        <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+                        <em v-show="addedObjects.length === 0">No file picked.</em>
+                        <table class="table table-condensed table-striped table-bordered" v-show="addedObjects.length > 0">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Files</th>
+                                    <th>Type</th>
+                                    <th>Reorder</th>
+                                    <th>Pick/Unpick</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(filExItem, idx) in addedObjects" :key="filExItem.WebPath" :data-file-picker-webpath="filExItem.WebPath">
+                                    <td>{{ idx + 1 }}.</td>
+                                    <td>
+                                        <a :href="'@rootWebPath' + filExItem.DownloadPath" target="_blank">{{ filExItem.WebPath }}</a>
+                                    </td>
+                                    <td>
+                                        <div v-if="filExItem.SizeInBytes >= 0">
+                                            <span v-if="filExItem.IsDirectory"><em>directory</em></span>
+                                            <span v-else>{{ getFileExtension(filExItem.Name) }}</span>
+                                        </div>
+                                        <div v-else>
+                                            <em class="text-danger">Not found</em>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-warning btn-circle btn-xs" @@click="moveChooseOption(idx, true)">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-warning btn-circle btn-xs" @@click="moveChooseOption(idx, false)">
+                                            <i class="fa fa-chevron-down"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn green btn-circle btn-xs" @@click="removeChooseOption(filExItem)">
+                                            Checked <i class="fa fa-check-square-o"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div v-show="pickerShown" class="well">
+                <cms-widget-modifier-errors :error-object="loadError"/>
+                <ul class="pagination pagination-sm">
+                    <li>
+                        <a href="#" @@click.prevent.stop="changeCurrentDir(currentDirPath)">
+                            Directory <i class="fa fa-refresh"></i>
+                        </a>
+                    </li>
+                    <template v-for="(cdpa, cdpaIdx) in currentDirPathArr">
+                        <li :key="cdpaIdx" :class="cdpa.path == currentDirPath ? 'active' : null">
+                            <a href="#" @@click.prevent.stop="changeCurrentDir(cdpa.path)" v-if="cdpaIdx > 0">
+                                {{ cdpa.label }}
+                            </a>
+                            <a href="#" @@click.prevent.stop="changeCurrentDir(cdpa.path)" v-else v-html="cdpa.label"></a>
+                        </li>
+                        <li v-if="showCurrentDirPathSeparator(cdpaIdx, currentDirPathArr.length)">
+                            <a href="#" @@click.prevent.stop="noop" style="padding-left: 1px; padding-right: 1px;">
+                                <i class="fa fa-chevron-right"></i></a>
+                        </li>
+                        <li v-if="isLoading">
+                            <a href="#" @@click.prevent.stop="noop">
+                                <i class="fa fa-spin fa-spinner"></i></a>
+                        </li>
+                    </template>
+                </ul>
+                <div>
+                    <a :href="fileExplorerPageUrl" target="_blank" class="btn btn-warning btn-sm">
+                        Upload
+                        <i class="fa fa-upload"></i>
+                        /
+                        Manage
+                        <i class="fa fa-folder-open"></i>
+                    </a>
+                </div>
+                <table class="table table-condensed table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px">No.</th>
+                            <th>Name</th>
+                            <th style="width: 50px">Pick</th>
+                            <th>Type</th>
+                            <th>File Size</th>
+                        </tr>
+                    </thead>
+                    <tbody v-if="currentDirListItems && currentDirListItems.length > 0">
+                        <tr v-for="(filExItem, filExIdx) in currentDirListItems" :key="filExIdx">
+                            <td>
+                                {{ filExIdx + 1 }}.
+                            </td>
+                            <td :data-file-explorer-item-web-path="filExItem.WebPath">
+                                <i class="fa fa-folder-o" v-if="filExItem.IsDirectory"></i>
+                                <i class="fa fa-file" v-else></i>
+                                <span style="margin-left: 8px;">
+                                    <a href="#" v-if="filExItem.IsDirectory" @@click.prevent.stop="changeCurrentDir(filExItem.WebPath)">
+                                        {{ filExItem.Name }}
+                                    </a>
+                                    <a :href="'@rootWebPath' + filExItem.DownloadPath" v-else target="_blank">
+                                        {{ filExItem.Name }}
+                                    </a>
+                                </span>
+                            </td>
+                            <td>
+                                <div v-if="filExItem.IsDirectory">
+                                    &nbsp;
+                                </div>
+                                <div v-else>                                    
+                                    <div v-if="!isMultiSelect">
+                                        <button type="button" class="btn btn-default btn-xs btn-circle" @@click="chooseOption(filExItem)"
+                                                v-if="!hasChosen(filExItem)">
+                                            Unchecked <i class="fa fa-square-o"></i>
+                                        </button>
+                                        <button type="button" class="btn green btn-circle btn-xs" @@click="clearChosenOption()" v-else>
+                                            Checked <i class="fa fa-check-square-o"></i>
+                                        </button>
+                                    </div>
+                                    <div v-else>
+                                        <button type="button" class="btn btn-default btn-xs btn-circle" @@click="addChooseOption(filExItem)"
+                                                v-if="!hasChosen(filExItem)">
+                                            Unchecked <i class="fa fa-square-o"></i>
+                                        </button>
+                                        <button type="button" class="btn green btn-circle btn-xs" @@click="removeChooseOption(filExItem)" v-else>
+                                            Checked <i class="fa fa-check-square-o"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div v-if="filExItem.SizeInBytes >= 0">
+                                    <span v-if="filExItem.IsDirectory"><em>directory</em></span>
+                                    <span v-else>{{ getFileExtension(filExItem.Name) }}</span>
+                                </div>
+                                <div v-else>
+                                    <em>File/directory not found.</em>
+                                </div>
+                            </td>
+                            <td>
+                                <span v-if="!filExItem.IsDirectory">
+                                    {{ humanizedFileSize(filExItem.SizeInBytes) }}
+                                </span>
+                                <span v-else>-n/a-</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody v-else>
+                        <tr>
+                            <td colspan="5">
+                                <em v-if="!isLoading">This directory is empty.</em>
+                                <i v-else class="fa fa-spin fa-spinner"></i>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center">
+                    <button class="btn btn-circle btn-default btn-xs" @@click="toggleShowPicker()">
+                        Hide <i class="fa fa-chevron-up"></i>
+                    </button>
+                </div>
+            </div>
+            <span class="help-block" v-html="helpText"></span>
+            <span class="help-block text-danger" v-for="(err, idx) in inputErrors" :key="idx">{{ err }}</span>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var apiBase = protoCms.apiBasePath;
+            var putils = protoCms.utils;
+            var ffm = protoCms.mixins.formFieldMixin;
+            var comp = {
+                name: 'cms-form-field-file-picker',
+                template: '#@tplId',
+                mixins: [ffm],
+                props: ['isMultiSelect', 'fileExplorerPageUrl'],
+                data: function() {
+                    return {
+                        addedObjects: [],
+                        currentDirPath: '',
+                        currentDirListItems: [],
+                        pickerShown: false,
+                        chosenShown: false,
+                        loadError: null,
+                        isLoading: false,
+                        inputValWacherEnabled: true
+                    };
+                },
+                computed: {
+                    inputVal: {
+                        get: function() {
+                            return this.getFormValue();
+                        },
+                        set: function(newVal) {
+                            this.setFormValue(newVal);
+                        }
+                    },
+                    currentDirPathArr: function () {
+                        var arr = [];
+                        arr.push({
+                            path: '',
+                            label: '<em><i class="fa fa-angle-double-left"></i>root<i class="fa fa-angle-double-right"></i></em>'
+                        });
+                        if (this.currentDirPath && this.currentDirPath.length > 0) {
+                            var pathParts = _.split(_.trim(this.currentDirPath, '/'), '/');
+                            for (var i = 0; i < pathParts.length; i++) {
+                                arr.push({
+                                    path: _.join(_.slice(pathParts, 0, i + 1), '/'),
+                                    label: pathParts[i]
+                                });
+                            }
+                        }
+                        return arr;
+                    },
+                    chosenOption: function () {
+                        if (!this.addedObjects || this.addedObjects.length === 0) {
+                            return null;
+                        }
+                        return this.addedObjects[0];
+                    }
+                },
+                watch: {
+                    inputVal: function() {
+                        if (!this.inputValWacherEnabled) return;
+                        this.loadExisting();
+                    }
+                },
+                methods: {
+                    loadExisting: function() {
+                        var self = this;
+                        var added = [];
+                        var proms = [];
+                        self.isLoading = true;
+                        var targetUrl = apiBase + '/file-explorer/path-info';
+                        _.forEach(self.inputVal,
+                            function(wp) {
+                                proms.push(putils.callApi({
+                                    url: targetUrl,
+                                    method: 'get',
+                                    headers: {
+                                        'X-ProtoCms-FileExplorer-Path': wp
+                                    }
+                                }).then(function(data) {
+                                    added.push(data);
+                                }, function(err) {
+                                    self.loadError = err;
+                                }));
+                            });
+                        if (proms === 0) return;
+                        Promise.all(proms).then(function () {
+                            self.addedObjects = added;
+                            self.updateInputVal();
+                            self.isLoading = false;
+                        }).catch(function(err) {
+                            self.isLoading = false;
+                        });
+                    },
+                    changeCurrentDir: function (path) {
+                        var self = this;
+                        self.isLoading = true;
+                        var targetUrl = apiBase + '/file-explorer/list';
+                        var targetPath = '';
+                        var targetPathArr = [];
+                        if (path && path.length > 0) {
+                            targetPathArr = _.split(_.trim(path, '/'), '/');
+                            _.forEach(targetPathArr,
+                                function (tpa) {
+                                    targetPath = targetPath + '/' + tpa;
+                                });
+                        }
+                        putils.callApi({
+                            url: targetUrl,
+                            method: 'get',
+                            headers: {
+                                'X-ProtoCms-FileExplorer-Path': targetPath
+                            }
+                        }).then(function (data) {
+                            self.loadError = null;
+                            self.currentDirPath = _.join(targetPathArr, '/');
+                            self.currentDirListItems = data;
+                            self.isLoading = false;
+                        }, function (err) {
+                            self.loadError = err;
+                            self.isLoading = false;
+                        });
+                    },
+                    updateInputVal: function () {
+                        var self = this;
+                        self.inputValWacherEnabled = false;
+                        self.inputVal = [];
+                        _.forEach(self.addedObjects,
+                            function (val, idx) {
+                                self.inputVal.push(val.WebPath);
+                            });
+                        Vue.nextTick(function() {
+                            self.inputValWacherEnabled = true;
+                        });
+                    },
+                    chooseOption: function (optObj) {
+                        this.addedObjects = [optObj];
+                        this.updateInputVal();
+                    },
+                    addChooseOption: function (optObj) {
+                        if (this.hasChosen(optObj)) return;
+                        this.addedObjects.push(optObj);
+                        this.updateInputVal();
+                    },
+                    removeChooseOption: function (optObj) {
+                        var changedAdded = _.filter(this.addedObjects, function(ao) {
+                            return ao.WebPath !== optObj.WebPath;
+                        });
+                        this.addedObjects = changedAdded;
+                        this.updateInputVal();
+                    },
+                    hasChosen: function (optObj) {
+                        for (var i = 0; i < this.addedObjects.length; i++) {
+                            if (this.addedObjects[i].WebPath === optObj.WebPath) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    clearChosenOption: function () {
+                        var self = this;
+                        self.addedObjects = [];
+                        self.updateInputVal();
+                    },
+                    moveChooseOption: function (idx, isUp) {
+                        var self = this;
+                        if (self.addedObjects.length === 0) return;
+                        if (idx === 0 && isUp) return;
+                        if (idx === self.addedObjects.length - 1 && !isUp) return;
+                        var temp;
+                        if (isUp) {
+                            temp = self.addedObjects[idx - 1];
+                            Vue.set(self.addedObjects, idx - 1, self.addedObjects[idx]);
+                            Vue.set(self.addedObjects, idx, temp);
+                        } else {
+                            temp = self.addedObjects[idx + 1];
+                            Vue.set(self.addedObjects, idx + 1, self.addedObjects[idx]);
+                            Vue.set(self.addedObjects, idx, temp);
+                        }
+                        self.updateInputVal();
+                    },
+                    toggleShowPicker: function () {
+                        this.pickerShown = !this.pickerShown;
+                        this.chosenShown = false;
+                        if (this.pickerShown && this.currentDirListItems.length === 0) {
+                            this.changeCurrentDir();
+                        }
+                    },
+                    toggleShowChosen: function () {
+                        this.chosenShown = !this.chosenShown;
+                        this.pickerShown = false;
+                    },
+                    showCurrentDirPathSeparator: function (cdpaIdx, pathArrLen) {
+                        var show = cdpaIdx < (pathArrLen - 1);
+                        return show;
+                    },
+                    getFileExtension: function (fileName) {
+                        var ext = '';
+                        var lastDotIdx = fileName.lastIndexOf('.');
+                        if (lastDotIdx !== -1) {
+                            ext = fileName.substr(lastDotIdx);
+                        }
+                        return ext;
+                    },
+                    humanizedFileSize: function (bytes) {
+                        var fileSizeUnits = [
+                            'B',
+                            'KB',
+                            'MB',
+                            'GB',
+                            'TB',
+                            'PB',
+                            'EB',
+                            'ZB'
+                        ];
+
+                        var val = bytes;
+                        var unit = '';
+                        for (var i = 0; i < fileSizeUnits.length; i++) {
+                            unit = fileSizeUnits[i];
+                            if (val < 1024) break;
+                            if (i < fileSizeUnits.length - 1) {
+                                val = val / 1024.0;
+                            }
+                        }
+                        return val.toFixed(2) + ' ' + unit;
+                    }
+                },
+                created: function() {
+                    this.loadExisting();
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

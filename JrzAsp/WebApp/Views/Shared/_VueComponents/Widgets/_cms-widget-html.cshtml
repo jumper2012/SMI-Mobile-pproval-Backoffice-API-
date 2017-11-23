@@ -1,0 +1,24 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div :class="cssClass" :style="cssStyle" v-html="innerHtml"></div>
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            var comp = {
+                name: 'cms-widget-html',
+                template: '#@tplId',
+                props: ['tagName', 'innerHtml', 'cssClass', 'cssStyle'],
+                data: function() {
+                    return {};
+                }
+            };
+
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

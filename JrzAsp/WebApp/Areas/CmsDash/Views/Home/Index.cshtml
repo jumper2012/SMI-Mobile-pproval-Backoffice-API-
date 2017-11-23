@@ -1,0 +1,20 @@
+﻿@using WebApp.Areas.CmsDash.Models
+@model HomeViewModel
+@{
+    var userName = Request.IsAuthenticated ? User?.Identity.Name : "";
+    ViewBag.Title = "Home";
+    ViewBag.Subtitle = string.IsNullOrWhiteSpace(userName) ? "Hello!" : $"Hello, {userName}!";
+
+    var wcs = Model.WelcomeCardSetting;
+}
+
+<div class="portlet light">
+    <div class="portlet-title">
+        <div class="caption">
+            <span class="caption-subject bold uppercase">@wcs.WelcomeHeading</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        @Html.Raw(wcs.WelcomeBody)
+    </div>
+</div>

@@ -1,0 +1,13 @@
+﻿table.cms-content-table { max-width: 100%; }
+
+table.cms-content-table th { min-width: 64px; }
+
+table.cms-content-table th,
+table.cms-content-table td { white-space: nowrap; }
+
+table.cms-content-table .btn-group .dropdown-menu { position: relative; }
+
+.cms-top-table-scroller {
+    max-width: 100%;
+    overflow: auto;
+}

@@ -1,0 +1,290 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <cms-widget-modal :full-width="true" ref="modOpModal" :show-footer="true" :show-bottom-close-button="true">
+            <span slot="title" v-if="elTitle">
+                {{ elTitle }}
+                <div v-if="elSubtitle"><small>{{ elSubtitle }}</small></div>
+            </span>
+            <cms-widget-modifier-errors :error-object="formOperationResult"/>
+            <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+            <div class="form" v-show="!isLoading">
+                <div class="form-body" ref="formBody" v-show="!hideFormBody">
+                    <div v-for="(vuePart, vpKey) in formVues" :key="vpKey" :data-modifier-form-part-key="vpKey">
+                        <component v-for="(formPartItem, idx) in vuePart" :key="idx" :is="formPartItem.Name" 
+                                v-bind="getPropsWithoutDollarType(formPartItem.Props)"/>
+                    </div>
+                </div>
+            </div>
+            <span slot="footer" v-show="!isLoading">
+                <button type="button" class="btn btn-primary" @@click="saveForm(true)">Commit <i class="fa fa-floppy-o"></i></button>
+                <button type="button" class="btn btn-default" @@click="resetForm(true, true)">Reset <i class="fa fa-refresh"></i></button>
+            </span>
+        </cms-widget-modal>
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            var apiBase = protoCms.apiBasePath;
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-modal-page-entity-operation',
+                template: '#@tplId',
+                props: ['entityApiName', 'entityId', 'entityTypeId', 'operationName', 'title', 'subtitle'],
+                data: function() {
+                    return {
+                        formObject: {},
+                        formVues: [],
+                        formOperationResult: {},
+                        isLoading: false,
+                        autoFormBodyHideHandler: null,
+                        hideFormBody: false,
+                        elEntityApiName: null,
+                        elEntityId: null,
+                        elEntityTypeId: null,
+                        elOperationName: null,
+                        elTitle: null,
+                        elSubtitle: null
+                    };
+                },
+                methods: {
+                    init: function (entityApiName, entityId, entityTypeId, operationName, title, subtitle) {
+                        if (entityApiName !== undefined) {
+                            this.elEntityApiName = entityApiName;
+                        }
+                        if (entityId !== undefined) {
+                            this.elEntityId = entityId;
+                        }
+                        if (entityTypeId !== undefined) {
+                            this.elEntityTypeId = entityTypeId;
+                        }
+                        if (operationName !== undefined) {
+                            this.elOperationName = operationName;
+                        }
+                        if (title !== undefined) {
+                            this.elTitle = title;
+                        }
+                        if (subtitle !== undefined) {
+                            this.elSubtitle = subtitle;
+                        }
+                        this.formObject = null;
+                        this.formOperationResult = null;
+                        this.resetForm(false);
+                    },
+                    loadForm: function() {
+                        var self = this;
+                        self.isLoading = true;
+                        var targetUrl = apiBase + '/' + self.elEntityApiName + '/' + self.elEntityTypeId + '/form/' + self.elOperationName;
+                        if (_.trim(putils.getdef(self.elEntityId, '')).length > 0) {
+                            targetUrl = targetUrl + '?id=' + window.encodeURIComponent(self.elEntityId);
+                        }
+                        return putils.callApi({
+                                url: targetUrl,
+                                method: 'post'
+                            })
+                            .then(function(data) {
+                                    self.formObject = data;
+                                    self.formOperationResult = null;
+                                    self.isLoading = false;
+                                },
+                            function (err) {
+                                self.formOperationResult = err;
+                                bootbox.alert('Cannot get form data');
+                                console.error('Error when getting form data for ' + self.elEntityApiName + ' modify operation ' +
+                                    self.elOperationName +
+                                    ' for ' +
+                                    self.elEntityTypeId,
+                                    err);
+                                self.isLoading = false;
+                            });
+                    },
+                    loadFormVue: function() {
+                        var self = this;
+                        self.isLoading = true;
+                        var targetUrl = apiBase +
+                            '/' + self.elEntityApiName + '/' +
+                            self.elEntityTypeId +
+                            '/form-vue/' +
+                            self.elOperationName;
+                        if (_.trim(putils.getdef(self.elEntityId, '')).length > 0) {
+                            targetUrl = targetUrl + '?id=' + window.encodeURIComponent(self.elEntityId);
+                        }
+                        return putils.callApi({
+                                url: targetUrl,
+                                method: 'post'
+                            })
+                            .then(function(data) {
+                                    self.formVues = data;
+                                    _.forIn(self.formObject,
+                                        function(fval, fkey) {
+                                            if (_.has(self.formVues, fkey)) {
+                                                for (var i = 0; i < self.formVues[fkey].length; i++) {
+                                                    self.formVues[fkey][i].Props['formObject'] = fval;
+                                                    self.formVues[fkey][i].Props['valuePathPrefix'] = fkey;
+                                                    self.formVues[fkey][i].Props['validationErrorPathPrefix'] = fkey;
+                                                }
+                                            }
+                                        });
+                                    self.isLoading = false;
+                                },
+                            function (err) {
+                                self.formOperationResult = err;
+                                bootbox.alert('Cannot get form view');
+                                console.error('Error when getting form view for ' + self.elEntityApiName + ' modify operation ' +
+                                    self.elOperationName +
+                                    ' for ' +
+                                    self.elEntityTypeId,
+                                    err);
+                                    self.isLoading = false;
+                                });
+                    },
+                    resetForm: function(useConfirm) {
+                        var self = this;
+                        var doReset = function() {
+                            self.loadForm().then(function() {
+                                return self.loadFormVue();
+                            }).then(function() {
+                                console.log('Finish reloading ' + self.elEntityApiName + ' operation form ' + self.elEntityTypeId);
+                            });
+                        };
+                        if (useConfirm) {
+                            bootbox.confirm("Are you sure?",
+                                function(conf) {
+                                    if (!conf) {
+                                        return;
+                                    }
+                                    doReset();
+                                });
+                        } else {
+                            doReset();
+                        }
+                    },
+                    saveForm: function(useConfirm) {
+                        var self = this;
+                        var doUpdate = function() {
+                            self.isLoading = true;
+                            return putils.callApi({
+                                method: 'post',
+                                url: apiBase + '/' + self.elEntityApiName + '/' + self.elEntityTypeId + '/modify/' + self.elOperationName,
+                                data: JSON.stringify(self.formObject),
+                                contentType: 'application/json'
+                            }).then(function(opResult) {
+                                    self.formOperationResult = opResult;
+                                    if (opResult.IsSuccess) {
+                                        bootbox.alert('Operation successful.');
+                                        console.log('Finish ' + self.elEntityApiName + ' modify operation ' +
+                                            self.elOperationName +
+                                            ' on ' +
+                                            self.elEntityTypeId);
+                                        self.$refs.modOpModal.hideModal();
+                                    } else {
+                                        console.log('Modify operation ' + self.elOperationName + ' for ' +
+                                            self.elEntityTypeId + ' has validation errors');
+                                    }
+                                    self.isLoading = false;
+                                },
+                                function (err) {
+                                    self.formOperationResult = err;
+                                    bootbox.alert('Operation unsuccessful due to unforeseen error');
+                                    console.error('Error when running ' + self.elEntityApiName + ' modify operation ' +
+                                        self.elOperationName +
+                                        ' for ' +
+                                        self.elEntityTypeId,
+                                        err);
+                                    self.isLoading = false;
+                                });
+                        };
+                        if (useConfirm) {
+                            bootbox.confirm("Are you sure?",
+                                function(conf) {
+                                    if (!conf) {
+                                        return;
+                                    }
+                                    doUpdate();
+                                });
+                        } else {
+                            doUpdate();
+                        }
+                    },
+                    setFormVuesOpResult: function (fmOpResult) {
+                        var self = this;
+                        fmOpResult = fmOpResult || self.formOperationResult;
+                        if (!self.formVues) {
+                            return;
+                        }
+                        _.forIn(self.formObject,
+                            function(fov, fok) {
+                                if (_.has(self.formVues, fok)) {
+                                    for (var i = 0; i < self.formVues[fok].length; i++) {
+                                        self.formVues[fok][i].Props['formOperationResult'] = fmOpResult;
+                                    }
+                                }
+                            });
+                    },
+                    setFormVuesFormObj: function (fmObj) {
+                        var self = this;
+                        fmObj = fmObj || self.formObject;
+                        if (!self.formVues) {
+                            return;
+                        }
+                        _.forIn(self.formObject,
+                            function (fov, fok) {
+                                if (_.has(self.formVues, fok)) {
+                                    for (var i = 0; i < self.formVues[fok].length; i++) {
+                                        self.formVues[fok][i].Props['formObject'] = fmObj;
+                                        self.formVues[fok][i].Props['valuePathPrefix'] = fok;
+                                        self.formVues[fok][i].Props['validationErrorPathPrefix'] = fok;
+                                    }
+                                }
+                            });
+                    },
+                    setFormVuesRelatedObj: function() {
+                        this.setFormVuesOpResult();
+                        this.setFormVuesFormObj();
+                    },
+                    hideFormBodyIfZeroHeight: function() {
+                        var fb = $(this.$refs.formBody);
+                        var fbh = fb.height();
+                        this.hideFormBody = fbh < 1;
+                    }
+                },
+                watch: {
+                    formOperationResult: function(val) {
+                        this.setFormVuesOpResult(val);
+                    },
+                    formObject: function(val) {
+                        this.setFormVuesFormObj(val);
+                    },
+                    formVues: function(val) {
+                        this.setFormVuesRelatedObj();
+                    }
+                },
+                created: function () {
+                    this.init(this.entityApiName, this.entityId, this.entityTypeId, this.operationName, this.title, this.subtitle);
+                },
+                mounted: function () {
+                    var self = this;
+                    if (self.autoFormBodyHideHandler !== null) {
+                        window.clearInterval(self.autoFormBodyHideHandler);
+                        self.autoFormBodyHideHandler = null;
+                    }
+                    self.autoFormBodyHideHandler = window.setInterval(function() {
+                        self.hideFormBodyIfZeroHeight();
+                    }, 33);
+                },
+                destroyed: function () {
+                    var self = this;
+                    if (self.autoFormBodyHideHandler !== null) {
+                        window.clearInterval(self.autoFormBodyHideHandler);
+                        self.autoFormBodyHideHandler = null;
+                    }
+                }
+            };
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

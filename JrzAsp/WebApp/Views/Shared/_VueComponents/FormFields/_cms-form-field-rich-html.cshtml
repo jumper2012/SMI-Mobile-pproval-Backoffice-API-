@@ -1,0 +1,100 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var rnd = Randomer.Self.Next();
+    var tplId = $"vue-tpl-{rnd}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="form-group">
+            <label v-html="label"></label>
+            <textarea class="form-control" :placeholder="placeholder" :rows="textareaRealRows" ref="editorTextarea"></textarea>
+            <textarea v-model="inputVal" style="display: none;"></textarea>
+            <span class="help-block" v-html="helpText"></span>
+            <span class="help-block text-danger" v-for="(err, idx) in inputErrors" :key="idx">{{ err }}</span>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var putils = protoCms.utils;
+            var ffm = protoCms.mixins.formFieldMixin;
+            var comp = {
+                name: 'cms-form-field-rich-html',
+                mixins: [ffm],
+                template: '#@tplId',
+                props: ['textareaRows'],
+                data: function() {
+                    return {
+                        editor: null,
+                        inputValWatcherEnabled: true
+                    }
+                },
+                computed: {
+                    textareaRealRows: function() {
+                        var self = this;
+                        var rows = putils.getdef(self.textareaRows, 10);
+                        if (rows < 1) {
+                            rows = 10;
+                        }
+                        return rows;
+                    },
+                    inputVal: {
+                        get: function() {
+                            return this.getFormValue();
+                        },
+                        set: function(newVal) {
+                            this.setFormValue(newVal);
+                        }
+                    }
+                },
+                watch: {
+                    inputVal: function (val) {
+                        var self = this;
+                        if (!self.editor || !self.inputValWatcherEnabled) {
+                            return;
+                        }
+                        // Redactor
+                        self.editor.redactor('code.set', val);
+
+                        // CKEditor
+                        // self.editor.setData(val);
+                    }
+                },
+                mounted: function () {
+                    var self = this;
+                    // Redactor
+                    self.editor = $(self.$refs.editorTextarea);
+                    self.editor.redactor({
+                        buttons: ['format', 'bold', 'italic', 'deleted',
+                            'lists', 'image', 'file', 'link', 'horizontalrule',
+                            'underline', 'ol', 'ul', 'indent', 'outdent'],
+                        callbacks: {
+                            change: function() {
+                                var red = this;
+                                self.inputValWatcherEnabled = false;
+                                self.inputVal = red.code.get();
+                                Vue.nextTick(function() {
+                                    self.inputValWatcherEnabled = true;
+                                });
+                            }
+                        }
+                    });
+                    self.editor.redactor('code.set', self.inputVal);
+
+                    // CKEditor
+                    //self.editor = CKEDITOR.replace(self.$refs.editorTextarea);
+                    //self.editor.on('change', function (evt) {
+                    //    self.inputValWatcherEnabled = false;
+                    //    self.editor.updateElement();
+                    //    self.inputVal = evt.editor.getData();
+                    //    Vue.nextTick(function() {
+                    //        self.inputValWatcherEnabled = true;
+                    //    });
+                    //});
+                    //self.editor.setData(self.inputVal);
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

@@ -1,0 +1,45 @@
+﻿@using WebApp.Features.MetronicTheme
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/javascript">
+        var putils = protoCms.utils;
+        protoCms.mixins.formFieldMixin = {
+            props: [
+                'label',
+                'formObject',
+                'valuePath',
+                'valuePathPrefix',
+                'placeholder',
+                'helpText',
+                'formOperationResult',
+                'validationErrorPathPrefix'
+            ],
+            methods: {
+                getFormValue: function(valPath) {
+                    var self = this;
+                    var prefix = putils.getdef(self.valuePathPrefix, '').length > 0 ? self.valuePathPrefix + '.' : '';
+                    valPath = valPath || prefix + self.valuePath;
+                    var val = _.get(self.formObject, valPath);
+                    return val;
+                },
+                setFormValue: function(val, valPath) {
+                    var self = this;
+                    var prefix = putils.getdef(self.valuePathPrefix, '').length > 0 ? self.valuePathPrefix + '.' : '';
+                    valPath = valPath || prefix + self.valuePath;
+                    _.set(self.formObject, valPath, val);
+                },
+                getValidationErrors: function(valPath) {
+                    var self = this;
+                    var prefix = putils.getdef(self.validationErrorPathPrefix, '').length > 0 ? self.validationErrorPathPrefix + '.' : '';
+                    valPath = valPath || prefix + self.valuePath;
+                    var errs = _.get(self.formOperationResult, "ValidationResult.Errors['" + valPath + "']");
+                    return putils.getdef(errs, []);
+                }
+            },
+            computed: {
+                inputErrors: function() {
+                    return this.getValidationErrors();
+                }
+            }
+        };
+    </script>
+}

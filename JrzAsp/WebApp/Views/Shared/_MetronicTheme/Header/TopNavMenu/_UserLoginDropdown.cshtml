@@ -1,0 +1,63 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms
+@using JrzAsp.Lib.ProtoCms.Vue.Services
+@using Microsoft.AspNet.Identity
+@{
+    var logoutFormId = $"cms-logout-form-{Randomer.Self.Next()}";
+    var logoutLinkId = $"{logoutFormId}-link";
+    var dp = ProtoEngine.GetDependencyProvider();
+}
+<!-- BEGIN USER LOGIN DROPDOWN -->
+<!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
+<li class="dropdown dropdown-user">
+    <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+        @if (Request.IsAuthenticated) {
+            var userMgr = dp.GetService<ApplicationUserManager>();
+            var authUser = userMgr.FindById(User?.Identity.GetUserId());
+            var photoUrl = authUser.GetPhotoDownloadUrl("width=45&height=45");
+            <img alt="@authUser.DisplayName Avatar" class="img-circle" src="@(photoUrl)" data-real-photo-path="@photoUrl"/>
+            <span class="username username-hide-on-mobile" title="@authUser.UserName">
+                @(authUser.DisplayName)
+            </span>
+            <i class="fa fa-angle-down"></i>
+        }
+    </a>
+    @if (Request.IsAuthenticated) {
+        var vueMgr = dp.GetService<IVueManager>();
+        <ul class="dropdown-menu dropdown-menu-default">
+            @foreach (var um in vueMgr.UserMenuItems.Where(x => !string.IsNullOrWhiteSpace(x?.Label))) {
+                <li data-user-menu-id="@um.Id" id="@um.HtmlId" class="@um.CssClass">
+                    <a href="@um.Href">
+                        <i class="@um.IconCssClass"></i> @um.Label
+                    </a>
+                </li>
+            }
+            <li>
+                <a href="#" id="@logoutLinkId">
+                    <i class="fa fa-power-off"></i> Log Out
+                </a>
+                <div style="display: none;">
+                    <form method="post" action="@Url.Action("LogOff", "Account", new {area = ""})" id="@logoutFormId">
+                        @Html.AntiForgeryToken()
+                    </form>
+                </div>
+            </li>
+        </ul>
+        using (Html.AtOtherScripts("cms-logout-script")) {
+            <script type="text/javascript">
+                $(function() {
+                    $("a#@logoutLinkId").click(function(e) {
+                        e.preventDefault();
+                        bootbox.confirm("Proceed to log out?",
+                            function(ans) {
+                                if (!ans) return;
+                                $("form#@logoutFormId").submit();
+                            });
+                    });
+                })
+            </script>
+        }
+    }
+</li>
+<!-- END USER LOGIN DROPDOWN -->

@@ -1,0 +1,31 @@
+﻿@using WebApp.Features.MetronicTheme
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/javascript">
+        $(function() {
+            var mixin = {
+                methods: {
+                    getContext: function() {
+                        return {
+                            vue: this,
+                            window: window,
+                            protoCms: protoCms
+                        }
+                    },
+                    getPropsWithoutDollarType: function(props) {
+                        props = props || {};
+                        var result = {};
+                        _.forIn(props,
+                            function(value, key) {
+                                if (key !== '$type') {
+                                    result[key] = value;
+                                }
+                            });
+                        return result;
+                    }
+                }
+            };
+
+            Vue.mixin(mixin);
+        })
+    </script>
+}

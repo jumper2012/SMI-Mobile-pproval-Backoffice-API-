@@ -1,0 +1,179 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="portlet light">
+            <div class="portlet-title">
+                <div class="actions">
+                    <a class="btn btn-circle btn-icon-only btn-default fullscreen" href="javascript:;" data-original-title="Fullscreen" title="Fullscreen"></a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <cms-widget-alert :message="alertMessage" type="success" v-show="alertMessage" />
+                <cms-widget-modifier-errors :error-object="formOperationResult"/>
+                <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+                <div class="form" v-show="!isLoading">
+                    <div class="form-body">
+                        <component v-for="(formPartItem, idx) in formVues" :key="idx" :is="formPartItem.Name" 
+                                   v-bind="getPropsWithoutDollarType(formPartItem.Props)"/>
+                    </div>
+                    <div class="form-actions text-right">
+                        <button type="button" class="btn btn-primary" @@click="updateForm(true)">Update <i class="fa fa-floppy-o"></i></button>
+                        <button type="button" class="btn btn-default" @@click="resetForm(true, true)">Reset <i class="fa fa-refresh"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        $(function() {
+            var apiBase = protoCms.apiBasePath;
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-page-setting',
+                template: '#@tplId',
+                props: ['settingName', 'settingId', 'settingInitialObject'],
+                data: function() {
+                    return {
+                        formObject: {},
+                        formVues: [],
+                        formOperationResult: {},
+                        alertMessage: '',
+                        isLoading: false
+                    };
+                },
+                methods: {
+                    loadForm: function() {
+                        var self = this;
+                        self.isLoading = true;
+                        return putils.callApi({
+                                url: apiBase + '/site-setting/' + self.settingId + '/form',
+                                method: 'post'
+                            })
+                            .then(function(data) {
+                                self.formObject = data.form;
+                                self.formOperationResult = null;
+                                self.isLoading = false;
+                            }, function() {
+                                self.isLoading = false;
+                            });
+                    },
+                    loadFormVue: function() {
+                        var self = this;
+                        self.isLoading = true;
+                        return putils.callApi({
+                                url: apiBase + '/site-setting/' + self.settingId + '/form-vue',
+                                method: 'post'
+                            })
+                            .then(function (data) {
+                                self.formVues = data.vues;
+                                self.isLoading = false;
+                            }, function() {
+                                self.isLoading = false;
+                            });
+                    },
+                    resetForm: function(useConfirm, clearAlert) {
+                        var self = this;
+                        var doReset = function() {
+                            self.loadForm().then(function() {
+                                return self.loadFormVue();
+                            }).then(function () {
+                                if (clearAlert) {
+                                    self.alertMessage = '';
+                                }
+                                console.log('Finish reloading setting ' + self.settingId);
+                            });
+                        };
+                        if (useConfirm) {
+                            bootbox.confirm("Are you sure?",
+                                function(conf) {
+                                    if (!conf) {
+                                        return;
+                                    }
+                                    doReset();
+                                });
+                        } else {
+                            doReset();
+                        }
+                    },
+                    updateForm: function(useConfirm) {
+                        var self = this;
+                        var doUpdate = function () {
+                            self.isLoading = true;
+                            return putils.callApi({
+                                method: 'post',
+                                url: apiBase + '/site-setting/' + self.settingId + '/modify',
+                                data: JSON.stringify({ form: self.formObject }),
+                                contentType: 'application/json'
+                            }).then(function(opResult) {
+                                    self.formOperationResult = opResult;
+                                    if (opResult.IsSuccess) {
+                                        self.resetForm(false, false);
+                                        self.alertMessage = self.settingName + ' setting updated';
+                                        console.log('Finish updating setting ' + self.settingId);
+                                    } else {
+                                        console.log('Setting update for ' + self.settingId + ' has validation errors');
+                                    }
+                                    self.isLoading = false;
+                                },
+                                function(err) {
+                                    self.formOperationResult = err;
+                                    console.error('Error when running setting modifier for ' + self.settingId, err);
+                                    self.isLoading = false;
+                                });
+                        };
+                        if (useConfirm) {
+                            bootbox.confirm("Are you sure?",
+                                function(conf) {
+                                    if (!conf) {
+                                        return;
+                                    }
+                                    doUpdate();
+                                });
+                        } else {
+                            doUpdate();
+                        }
+                    },
+                    setFormVuesOpResult: function (fmOpResult) {
+                        fmOpResult = fmOpResult || this.formOperationResult;
+                        if (!this.formVues) { return; }
+                        for (var i = 0; i < this.formVues.length; i++) {
+                            this.formVues[i].Props.formOperationResult = fmOpResult;
+                        }
+                    },
+                    setFormVuesFormObj: function (fmObj) {
+                        fmObj = fmObj || this.formObject;
+                        if (!this.formVues) { return; }
+                        for (var i = 0; i < this.formVues.length; i++) {
+                            this.formVues[i].Props.formObject = fmObj;
+                        }
+                    },
+                    setFormVuesRelatedObj: function() {
+                        this.setFormVuesOpResult();
+                        this.setFormVuesFormObj();
+                    }
+                },
+                watch: {
+                    formOperationResult: function (val) {
+                        this.setFormVuesOpResult(val);
+                    },
+                    formObject: function (val) {
+                        this.setFormVuesFormObj(val);
+                    },
+                    formVues: function(val) {
+                        this.setFormVuesRelatedObj();
+                    }
+                },
+                created: function() {
+                    this.resetForm();
+                }
+            };
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

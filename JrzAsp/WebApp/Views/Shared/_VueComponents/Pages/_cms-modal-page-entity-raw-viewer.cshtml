@@ -1,0 +1,112 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <cms-widget-modal :full-width="true" ref="rawViewerModal" :showFooter="true" :showBottomCloseButton="true">
+            <span slot="title" v-if="title">
+                {{ title }}
+                <div v-if="subtitle"><small>{{ subtitle }}</small></div>
+            </span>
+            <cms-widget-modifier-errors :error-object="loadError"/>
+            <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+            <div v-show="!isLoading" v-if="rawView" class="table-scrollable">
+                <table class="table table-bordered table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Value</th>
+                            <th>Property</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(rv,idx) in rawView" :key="idx">
+                            <td><b>{{ rv.Label }}</b></td>
+                            <td>
+                                <component v-for="(rvv, vidx) in rv.Vues" :key="vidx" :is="rvv.Name"
+                                           v-bind="getPropsWithoutDollarType(rvv.Props)"></component>
+                            </td>
+                            <td><code class="text-muted small">{{ rv.Field }}</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <span slot="footer">
+                <button type="button" class="btn btn-primary" @@click="reloadRawData">
+                    Refresh
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </span>
+        </cms-widget-modal>
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            var apiBase = protoCms.apiBasePath;
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-modal-page-entity-raw-viewer',
+                template: '#@tplId',
+                props: ['entityId', 'entityTypeId', 'entityApiName', 'title', 'subtitle'],
+                data: function() {
+                    return {
+                        rawView: null,
+                        loadError: null,
+                        isLoading: false
+                    };
+                },
+                methods: {
+                    init: function (entityApiName, entityId, entityTypeId, title, subtitle) {
+                        if (entityId !== undefined) {
+                            this.entityId = entityId;
+                        }
+                        if (entityTypeId !== undefined) {
+                            this.entityTypeId = entityTypeId;
+                        }
+                        if (entityApiName !== undefined) {
+                            this.entityApiName = entityApiName;
+                        }
+                        if (title !== undefined) {
+                            this.title = title;
+                        }
+                        if (subtitle !== undefined) {
+                            this.subtitle = subtitle;
+                        }
+                        this.reloadRawData();
+                    },
+                    reloadRawData: function() {
+                        var self = this;
+                        self.isLoading = true;
+                        return putils.callApi({
+                            url: apiBase + '/' + self.entityApiName + '/' + self.entityTypeId + '/get?id=' +
+                                 window.encodeURIComponent(self.entityId) + '&shape=3',
+                            method: 'get'
+                        }).then(
+                            function(data) {
+                                self.rawView = data;
+                                self.loadError = null;
+                                self.isLoading = false;
+                            },
+                            function(err) {
+                                self.loadError = err;
+                                bootbox.alert('Cannot get raw ' + self.entityApiName + ' view');
+                                console.error('Error when getting raw ' + self.entityApiName + 'view for ' +
+                                    self.entityTypeId +
+                                    '(' +
+                                    self.entityId +
+                                    ')',
+                                    err);
+                                self.isLoading = false;
+                            });
+                    }
+                },
+                created: function() {
+                    this.init();
+                }
+            };
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

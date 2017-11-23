@@ -1,0 +1,947 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var vueTplId = $"vue-tpl-{Randomer.Self.Next()}";
+    var rootWebPath = Url.Content("~");
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@vueTplId">
+        <div class="portlet light">
+            <div class="portlet-title tabbable-line">
+                <div class="caption" v-if="activeTabName === 'list'">
+                    <i class="fa fa-spin fa-spinner" v-if="listIsLoading"></i>
+                    <i class="fa fa-list" v-else></i>
+                    <span class="caption-subject">
+                        List
+                    </span>
+                    <span class="caption-helper">List of files and directories inside current directory.</span>
+                </div>
+                <div class="caption" v-if="activeTabName === 'upload-files'">
+                    <i class="fa fa-spin fa-spinner" v-if="uploadFilesIsLoading"></i>
+                    <i class="fa fa-upload" v-else></i>
+                    <span class="caption-subject">
+                        Upload Files
+                    </span>
+                    <span class="caption-helper">Upload files to current directory.</span>
+                </div>
+                <div class="caption" v-if="activeTabName === 'copy-bin'">
+                    <i class="fa fa-spin fa-spinner" v-if="copyBinIsLoading"></i>
+                    <i class="fa fa-copy" v-else></i>
+                    <span class="caption-subject">
+                        Copy Bin
+                        <span v-if="copyBin && copyBin.length > 0" class="badge badge-warning">{{ copyBin.length }}</span>
+                    </span>
+                    <span class="caption-helper">Files and directories ready to be copied to current directory.</span>
+                </div>
+                <div class="caption" v-if="activeTabName === 'delete-bin'">
+                    <i class="fa fa-spin fa-spinner" v-if="deleteBinIsLoading"></i>
+                    <i class="fa fa-trash" v-else></i>
+                    <span class="caption-subject">
+                        Delete Bin
+                        <span v-if="deleteBin && deleteBin.length > 0" class="badge badge-danger">{{ deleteBin.length }}</span>
+                    </span>
+                    <span class="caption-helper">Files and directories ready to be deleted from website.</span>
+                </div>
+                <div class="actions">
+                    <a class="btn btn-circle btn-icon-only btn-default fullscreen" href="javascript:;"> </a>
+                </div>
+                <ul class="nav nav-tabs">
+                    <li :class="activeTabName === 'list' ? 'active' : null">
+                        <a href="#" @@click.prevent.stop="changeActiveTab('list')">
+                            <i class="fa fa-spin fa-spinner" v-if="listIsLoading"></i>
+                            <i class="fa fa-list" v-else></i> List</a>
+                    </li>
+                    <li :class="activeTabName === 'upload-files' ? 'active' : null">
+                        <a href="#" @@click.prevent.stop="changeActiveTab('upload-files')">
+                            <i class="fa fa-spin fa-spinner" v-if="uploadFilesIsLoading"></i>
+                            <i class="fa fa-upload" v-else></i> Upload Files</a>
+                    </li>
+                    <li :class="activeTabName === 'copy-bin' ? 'active' : null">
+                        <a href="#" @@click.prevent.stop="changeActiveTab('copy-bin')">
+                            <i class="fa fa-spin fa-spinner" v-if="copyBinIsLoading"></i>
+                            <i class="fa fa-copy" v-else></i> Copy Bin
+                            <span v-if="copyBin && copyBin.length > 0" class="badge badge-warning">{{ copyBin.length }}</span>
+                        </a>
+                    </li>
+                    <li :class="activeTabName === 'delete-bin' ? 'active' : null">
+                        <a href="#" @@click.prevent.stop="changeActiveTab('delete-bin')">
+                            <i class="fa fa-spin fa-spinner" v-if="deleteBinIsLoading"></i>
+                            <i class="fa fa-trash" v-else></i> Delete Bin
+                            <span v-if="deleteBin && deleteBin.length > 0" class="badge badge-danger">{{ deleteBin.length }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="portlet-body">
+                <div class="form-control-static">
+                    <ul class="pagination pagination-sm">
+                        <li>
+                            <a href="#" @@click.prevent.stop="changeCurrentDir(currentDirPath)">
+                                Directory <i class="fa fa-refresh"></i>
+                            </a>
+                        </li>
+                        <template v-for="(cdpa, cdpaIdx) in currentDirPathArr">
+                            <li :key="cdpaIdx" :class="cdpa.path == currentDirPath ? 'active' : null">
+                                <a href="#" @@click.prevent.stop="changeCurrentDir(cdpa.path)" v-if="cdpaIdx > 0">
+                                    {{ cdpa.label }}
+                                </a>
+                                <a href="#" @@click.prevent.stop="changeCurrentDir(cdpa.path)" v-else v-html="cdpa.label"></a>
+                            </li>
+                            <li v-if="showCurrentDirPathSeparator(cdpaIdx, currentDirPathArr.length)">
+                                <a href="#" @@click.prevent.stop="noop" style="padding-left: 1px; padding-right: 1px;">
+                                    <i class="fa fa-chevron-right"></i></a>
+                            </li>
+                            <li v-if="listIsLoading">
+                                <a href="#" @@click.prevent.stop="noop">
+                                    <i class="fa fa-spin fa-spinner"></i></a>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                <cms-widget-modifier-errors :error-object="loadError"/>
+                <div v-show="activeTabName === 'list'">
+                    <button type="button" v-if="!showCreateDirForm && !listIsLoading" class="btn green btn-sm" @@click="toggleShowCreateDirForm()">
+                        Create Directory <i class="fa fa-plus"></i>
+                    </button>
+                    <div class="well well-sm" v-if="showCreateDirForm && !listIsLoading">
+                        <div class="form-group">
+                            <label>New Directory Name</label>
+                            <input type="text" maxlength="128" class="form-control" v-model="newDirName"/>
+                        </div>
+                        <div class="form-action text-right">
+                            <button class="btn btn-default" type="button" @@click="toggleShowCreateDirForm()">
+                                Cancel <i class="fa fa-close"></i>
+                            </button>
+                            <button class="btn btn-primary" type="button" @@click="createNewDir()">
+                                Create <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <table class="table table-condensed table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px">No.</th>
+                                <td style="width: 70px"><i class="fa fa-ellipsis-h"></i></td>
+                                <th>Name</th>
+                                <th style="width: 50px"><i class="fa fa-star"></i></th>
+                                <th>Type</th>
+                                <th>File Size</th>
+                            </tr>
+                        </thead>
+                        <tbody v-if="currentDirListItems && currentDirListItems.length > 0">
+                            <tr v-for="(filExItem, filExIdx) in currentDirListItems" :key="filExIdx">
+                                <td>
+                                    {{ filExIdx + 1 }}.
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a class="btn btn-warning btn-xs dropdown-toggle" data-toggle="dropdown" href="javascript:;" aria-expanded="false">
+                                            Opt <i class="fa fa-angle-down"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a href="#" @@click.prevent="toggleRenamer(filExItem)">
+                                                    <i class="fa fa-i-cursor"></i>
+                                                    Rename
+                                                </a>
+                                            </li>
+                                            <li v-if="!isInCopyBin(filExItem)">
+                                                <a href="#" @@click.prevent="addToCopyBin(filExItem)">
+                                                    <i class="fa fa-copy"></i>
+                                                    Add to Copy Bin
+                                                </a>
+                                            </li>
+                                            <li v-else>
+                                                <a href="#" @@click.prevent="remFromCopyBin(filExItem)">
+                                                    <i class="fa fa-copy"></i>
+                                                    Remove from Copy Bin
+                                                </a>
+                                            </li>
+                                            <li v-if="!isInDeleteBin(filExItem)">
+                                                <a href="#" @@click.prevent="addToDeleteBin(filExItem)">
+                                                    <i class="fa fa-trash"></i>
+                                                    Add to Delete Bin
+                                                </a>
+                                            </li>
+                                            <li v-else>
+                                                <a href="#" @@click.prevent="remFromDeleteBin(filExItem)">
+                                                    <i class="fa fa-trash"></i>
+                                                    Remove from Delete Bin
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td :data-file-explorer-item-web-path="filExItem.WebPath">
+                                    <i class="fa fa-folder-o" v-if="filExItem.IsDirectory"></i>
+                                    <i class="fa fa-file" v-else></i>
+                                    <span style="margin-left: 8px;" v-if="!renamerIsLoading[filExItem.WebPath]">
+                                        <a href="#" v-if="filExItem.IsDirectory" @@click.prevent.stop="changeCurrentDir(filExItem.WebPath)">
+                                            {{ filExItem.Name }}
+                                        </a>
+                                        <a :href="'@rootWebPath' + filExItem.DownloadPath" v-else target="_blank">
+                                            {{ filExItem.Name }}
+                                        </a>
+                                    </span>
+                                    <span style="margin-left: 8px" v-else>
+                                        <i class="fa fa-spin fa-spinner"></i>
+                                    </span>
+                                    <div v-if="shownRenamerForm[filExItem.WebPath] && !renamerIsLoading[filExItem.WebPath]" class="well well-sm">
+                                        <div class="form-group">
+                                            <label>New Name</label>
+                                            <input type="text" class="form-control" v-model="renamerValues[filExItem.WebPath]" />
+                                        </div>
+                                        <div class="form-action text-right">
+                                            <button type="button" class="btn btn-default" @@click="toggleRenamer(filExItem)">
+                                                Cancel <i class="fa fa-close"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-primary" @@click="performRename(filExItem)">
+                                                Rename <i class="fa fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span v-if="isInCopyBin(filExItem)">
+                                        <i class="fa fa-copy"></i>
+                                    </span>
+                                    <span v-if="isInDeleteBin(filExItem)">
+                                        <i class="fa fa-trash"></i>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div v-if="filExItem.SizeInBytes >= 0">
+                                        <span v-if="filExItem.IsDirectory"><em>directory</em></span>
+                                        <span v-else>{{ getFileExtension(filExItem.Name) }}</span>
+                                    </div>
+                                    <div v-else>
+                                        <em class="text-danger">Not found</em>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span v-if="!filExItem.IsDirectory">
+                                        {{ humanizedFileSize(filExItem.SizeInBytes) }}
+                                    </span>
+                                    <span v-else>-n/a-</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else>
+                            <tr>
+                                <td colspan="6">
+                                    <em v-if="!listIsLoading">This directory is empty.</em>
+                                    <i v-else class="fa fa-spin fa-spinner"></i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-show="activeTabName === 'upload-files'">
+                    <div class="row">
+                        <div class="col-sm-6 col-md-4" v-for="(upl, uplKey, uplIdx) in uploadFileInput" :key="uplKey">
+                            <div class="well well-sm">
+                                <cms-widget-modifier-errors :error-object="uploadFileInputLoadErrors[uplKey]" title=""/>
+                                <div class="fileinput-new" :ref="uplKey + 'FileInputBox'">
+                                    <div class="fileinput-preview thumbnail fileinput-exists" data-trigger="fileinput"
+                                            style="width: 200px; height: 150px;"></div>
+                                    <div v-show="!uploadFilesIsLoading">
+                                        <span class="btn red btn-outline btn-file">
+                                            <span class="fileinput-new"> Select File </span>
+                                            <span class="fileinput-exists"> Change </span>
+                                            <input type="file" name="file" :ref="uplKey + 'FileInput'"/>
+                                        </span>
+                                        <a href="javascript:;" class="btn red fileinput-exists" data-dismiss="fileinput"> Remove </a>
+                                    </div>
+                                    <i v-show="uploadFilesIsLoading" class="fa fa-spin fa-spinner"></i>
+                                </div>
+                                <span class="help-text text-danger" v-for="(uplErr, uplErrIdx) in uploadFileInputErrors[uplKey]" :key="uplErrIdx">
+                                    {{ uplErr }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-action text-right">
+                        <button type="button" class="btn btn-primary" v-if="!uploadFilesIsLoading" @@click="uploadFiles">
+                            Upload Files <i class="fa fa-upload"></i>
+                        </button>
+                        <button type="button" class="btn btn-default" v-else>
+                            Uploading Files... <i class="fa fa-spin fa-spinner"></i>
+                        </button>
+                    </div>
+                </div>
+                <div v-show="activeTabName === 'copy-bin'">
+                    <div class="alert alert-block alert-danger fade in" v-if="copyErrors && copyErrors.length > 0">
+                        <ul class="list-group">
+                            <li class="list-group-item" v-for="copyErr in copyErrors">
+                                {{ copyErr }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div v-if="copyBin && copyBin.length > 0 && !copyBinIsLoading">
+                        <button type="button" class="btn btn-primary btn-sm" @@click="performPasteHere()">
+                            Paste Here <i class="fa fa-paste"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-sm" @@click="clearCopyBin()">
+                            Clear All <i class="fa fa-close"></i>
+                        </button>
+                    </div>
+                    <table class="table table-condensed table-striped table-bordered" v-if="!copyBinIsLoading">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px">No.</th>
+                                <td style="width: 70px"><i class="fa fa-ellipsis-h"></i></td>
+                                <th>Name</th>
+                                <th style="width: 50px"><i class="fa fa-star"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody v-if="copyBin && copyBin.length > 0">
+                            <tr v-for="(filExItem, filExIdx) in copyBin" :key="filExIdx">
+                                <td>
+                                    {{ filExIdx + 1 }}.
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a class="btn btn-warning btn-xs dropdown-toggle" data-toggle="dropdown" href="javascript:;" aria-expanded="false">
+                                            Opt <i class="fa fa-angle-down"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li v-if="!isInCopyBin(filExItem)">
+                                                <a href="#" @@click.prevent="addToCopyBin(filExItem)">
+                                                    <i class="fa fa-copy"></i>
+                                                    Add to Copy Bin
+                                                </a>
+                                            </li>
+                                            <li v-else>
+                                                <a href="#" @@click.prevent="remFromCopyBin(filExItem)">
+                                                    <i class="fa fa-copy"></i>
+                                                    Remove from Copy Bin
+                                                </a>
+                                            </li>
+                                            <li v-if="!isInDeleteBin(filExItem)">
+                                                <a href="#" @@click.prevent="addToDeleteBin(filExItem)">
+                                                    <i class="fa fa-trash"></i>
+                                                    Add to Delete Bin
+                                                </a>
+                                            </li>
+                                            <li v-else>
+                                                <a href="#" @@click.prevent="remFromDeleteBin(filExItem)">
+                                                    <i class="fa fa-trash"></i>
+                                                    Remove from Delete Bin
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td :data-file-explorer-item-web-path="filExItem.WebPath">
+                                    <i class="fa fa-folder-o" v-if="filExItem.IsDirectory"></i>
+                                    <i class="fa fa-file" v-else></i>
+                                    <span style="margin-left: 8px;">
+                                        <a href="#" v-if="filExItem.IsDirectory" @@click.prevent.stop="changeCurrentDir(filExItem.WebPath)">
+                                            {{ filExItem.WebPath }}
+                                        </a>
+                                        <a :href="'@rootWebPath' + filExItem.DownloadPath" v-else target="_blank">
+                                            {{ filExItem.WebPath }}
+                                        </a>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span v-if="isInCopyBin(filExItem)">
+                                        <i class="fa fa-copy"></i>
+                                    </span>
+                                    <span v-if="isInDeleteBin(filExItem)">
+                                        <i class="fa fa-trash"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else>
+                            <tr>
+                                <td colspan="4">
+                                    <em v-if="!listIsLoading">Copy bin is empty.</em>
+                                    <i v-else class="fa fa-spin fa-spinner"></i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-show="activeTabName === 'delete-bin'">
+                    <div class="alert alert-block alert-danger fade in" v-if="deleteErrors && deleteErrors.length > 0">
+                        <ul class="list-group">
+                            <li class="list-group-item" v-for="deleteErr in copyErrors">
+                                {{ deleteErr }}
+                            </li>
+                        </ul>
+                    </div>
+                    <div v-if="deleteBin && deleteBin.length > 0 && !deleteBinIsLoading">
+                        <button type="button" class="btn btn-danger btn-sm" @@click="performDeleteAll()">
+                            Delete All <i class="fa fa-trash"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-sm" @@click="clearDeleteBin()">
+                            Clear All <i class="fa fa-close"></i>
+                        </button>
+                    </div>
+                    <table class="table table-condensed table-striped table-bordered" v-if="!deleteBinIsLoading">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px">No.</th>
+                                <td style="width: 70px"><i class="fa fa-ellipsis-h"></i></td>
+                                <th>Name</th>
+                                <th style="width: 50px"><i class="fa fa-star"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody v-if="deleteBin && deleteBin.length > 0">
+                            <tr v-for="(filExItem, filExIdx) in deleteBin" :key="filExIdx">
+                                <td>
+                                    {{ filExIdx + 1 }}.
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a class="btn btn-warning btn-xs dropdown-toggle" data-toggle="dropdown" href="javascript:;" aria-expanded="false">
+                                            Opt <i class="fa fa-angle-down"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li v-if="!isInCopyBin(filExItem)">
+                                                <a href="#" @@click.prevent="addToCopyBin(filExItem)">
+                                                    <i class="fa fa-copy"></i>
+                                                    Add to Copy Bin
+                                                </a>
+                                            </li>
+                                            <li v-else>
+                                                <a href="#" @@click.prevent="remFromCopyBin(filExItem)">
+                                                    <i class="fa fa-copy"></i>
+                                                    Remove from Copy Bin
+                                                </a>
+                                            </li>
+                                            <li v-if="!isInDeleteBin(filExItem)">
+                                                <a href="#" @@click.prevent="addToDeleteBin(filExItem)">
+                                                    <i class="fa fa-trash"></i>
+                                                    Add to Delete Bin
+                                                </a>
+                                            </li>
+                                            <li v-else>
+                                                <a href="#" @@click.prevent="remFromDeleteBin(filExItem)">
+                                                    <i class="fa fa-trash"></i>
+                                                    Remove from Delete Bin
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td :data-file-explorer-item-web-path="filExItem.WebPath">
+                                    <i class="fa fa-folder-o" v-if="filExItem.IsDirectory"></i>
+                                    <i class="fa fa-file" v-else></i>
+                                    <span style="margin-left: 8px;">
+                                        <a href="#" v-if="filExItem.IsDirectory" @@click.prevent.stop="changeCurrentDir(filExItem.WebPath)">
+                                            {{ filExItem.WebPath }}
+                                        </a>
+                                        <a :href="'@rootWebPath' + filExItem.DownloadPath" v-else target="_blank">
+                                            {{ filExItem.WebPath }}
+                                        </a>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span v-if="isInCopyBin(filExItem)">
+                                        <i class="fa fa-copy"></i>
+                                    </span>
+                                    <span v-if="isInDeleteBin(filExItem)">
+                                        <i class="fa fa-trash"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else>
+                            <tr>
+                                <td colspan="4">
+                                    <em v-if="!listIsLoading">Delete bin is empty.</em>
+                                    <i v-else class="fa fa-spin fa-spinner"></i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var apiBase = protoCms.apiBasePath;
+            var putils = protoCms.utils;
+
+            var comp = {
+                name: 'cms-page-file-explorer',
+                template: '#@vueTplId',
+                data: function() {
+                    return {
+                        activeTabName: 'list',
+                        currentDirPath: '',
+                        currentDirListItems: [],
+                        showCreateDirForm: false,
+                        newDirName: '',
+                        copyBin: [],
+                        copyErrors: [],
+                        deleteBin: [],
+                        deleteErrors: [],
+                        shownRenamerForm: {},
+                        renamerValues: {},
+                        renamerIsLoading: {},
+                        uploadFileInput: {
+                            item1: false,
+                            item2: false,
+                            item3: false,
+                            item4: false,
+                            item5: false,
+                            item6: false
+                        },
+                        uploadFileInputErrors: {
+                            item1: [],
+                            item2: [],
+                            item3: [],
+                            item4: [],
+                            item5: [],
+                            item6: []
+                        },
+                        uploadFileInputLoadErrors: {
+                            item1: null,
+                            item2: null,
+                            item3: null,
+                            item4: null,
+                            item5: null,
+                            item6: null
+                        },
+                        loadError: null,
+                        listIsLoading: false,
+                        uploadFilesIsLoading: false,
+                        copyBinIsLoading: false,
+                        deleteBinIsLoading: false
+                    };
+                },
+                computed: {
+                    currentDirPathArr: function () {
+                        var arr = [];
+                        arr.push({
+                            path: '',
+                            label: '<em><i class="fa fa-angle-double-left"></i>root<i class="fa fa-angle-double-right"></i></em>'
+                        });
+                        if (this.currentDirPath && this.currentDirPath.length > 0) {
+                            var pathParts = _.split(_.trim(this.currentDirPath, '/'), '/');
+                            for (var i = 0; i < pathParts.length; i++) {
+                                arr.push({
+                                    path: _.join(_.slice(pathParts, 0, i + 1), '/'),
+                                    label: pathParts[i]
+                                });
+                            }
+                        }
+                        return arr;
+                    }
+                },
+                methods: {
+                    changeCurrentDir: function (path) {
+                        var self = this;
+                        self.listIsLoading = true;
+                        var targetUrl = apiBase + '/file-explorer/list';
+                        var targetPath = '';
+                        var targetPathArr = [];
+                        if (path && path.length > 0) {
+                            targetPathArr = _.split(_.trim(path, '/'), '/');
+                            _.forEach(targetPathArr,
+                                function (tpa) {
+                                    targetPath = targetPath + '/' + tpa;
+                                });
+                        }
+                        putils.callApi({
+                            url: targetUrl,
+                            method: 'get',
+                            headers: {
+                                'X-ProtoCms-FileExplorer-Path': targetPath
+                            }
+                        }).then(function (data) {
+                            self.loadError = null;
+                            self.currentDirPath = _.join(targetPathArr, '/');
+                            self.currentDirListItems = data;
+                            self.shownRenamerForm = {};
+                            self.renamerValues = {};
+                            self.renamerIsLoading = {};
+                            self.listIsLoading = false;
+                        }, function(err) {
+                            self.loadError = err;
+                            self.listIsLoading = false;
+                        });
+                    },
+                    createNewDir: function () {
+                        var self = this;
+                        if (!self.newDirName || self.newDirName.length === 0) {
+                            bootbox.alert("New directory name required.");
+                            return;
+                        }
+                        bootbox.confirm("Proceed to create new directory?", function(answer) {
+                            if (!answer) return;
+                            self.listIsLoading = true;
+                            var targetUrl = apiBase + '/file-explorer/create-dir';
+                            var newDirPath = self.currentDirPath + '/' + self.newDirName;
+                            putils.callApi({
+                                url: targetUrl,
+                                method: 'post',
+                                headers: {
+                                    'X-ProtoCms-FileExplorer-Path': newDirPath
+                                }
+                            }).then(function (data) {
+                                self.loadError = null;
+                                self.newDirName = '';
+                                self.showCreateDirForm = false;
+                                bootbox.alert('New directory created <b>' + data.WebPath + '</b>.');
+                                self.listIsLoading = false;
+                                self.changeCurrentDir(self.currentDirPath);
+                            }, function (err) {
+                                self.loadError = err;
+                                self.listIsLoading = false;
+                            });
+                        });
+                    },
+                    uploadFiles: function () {
+                        var self = this;
+                        bootbox.confirm("Proceed to upload files?",
+                            function(answer) {
+                                if (!answer) return;
+                                
+                                self.uploadFilesIsLoading = true;
+                                var targetUrl = apiBase + '/file-explorer/upload-file';
+                                var proms = [];
+                                var uploadedSuccess = [];
+                                _.forIn(self.uploadFileInput,
+                                    function (ufi, ufiKey) {
+                                        if (ufi) {
+                                            var formData = new FormData();
+                                            var file = self.$refs[ufiKey + 'FileInput'][0].files[0];
+                                            var targetPath = self.currentDirPath + '/' + file.name;
+                                            formData.append('targetPath', targetPath);
+                                            formData.append('file', file);
+                                            proms.push(putils.callApi({
+                                                url: targetUrl,
+                                                method: 'post',
+                                                data: formData,
+                                                processData: false,
+                                                contentType: false
+                                            }).then(function(data) {
+                                                if (data.Errors && data.Errors.length > 0) {
+                                                    self.uploadFileInputLoadErrors[ufiKey] = null;
+                                                    self.uploadFileInputErrors[ufiKey] = data.Errors;
+                                                } else {
+                                                    uploadedSuccess.push(data.WebPath);
+                                                    self.uploadFileInputErrors[ufiKey] = [];
+                                                    self.uploadFileInputLoadErrors[ufiKey] = null;
+                                                    $(self.$refs[ufiKey + 'FileInputBox']).fileinput('clear');
+                                                }
+                                            }, function(err) {
+                                                self.uploadFileInputLoadErrors[ufiKey] = err;
+                                            }));
+                                        }
+                                    });
+                                if (proms.length === 0) {
+                                    bootbox.alert("There's no file to upload.");
+                                } else {
+                                    Promise.all(proms).then(function () {
+                                        bootbox.alert("All files has been successfully uploaded.<br/><ul><li>" + _.join(uploadedSuccess, '</li><li>') + "</li></ul>");
+                                        self.uploadFilesIsLoading = false;
+                                    },
+                                    function() {
+                                        self.uploadFilesIsLoading = false;
+                                    });
+                                }
+                            });
+                        
+                    },
+                    performRename: function(fileItem) {
+                        var self = this;
+                        var newName = putils.getdef(self.renamerValues[fileItem.WebPath], '');
+                        if (newName.length === 0) {
+                            bootbox.alert("New name is required.");
+                            return;
+                        }
+                        bootbox.confirm("Proceed to rename?", function(answer) {
+                            if (!answer) return;
+                            Vue.set(self.renamerIsLoading, fileItem.WebPath, true);
+                            var targetUrl = apiBase + '/file-explorer/rename';
+                            var sourcePath = fileItem.WebPath;
+                            var sourceBasePath = sourcePath.substr(0, sourcePath.lastIndexOf('/'));
+                            var targetPath = sourceBasePath + '/' + _.trim(newName, '/');
+                            putils.callApi({
+                                url: targetUrl,
+                                method: 'post',
+                                headers: {
+                                    'X-ProtoCms-FileExplorer-Path': sourcePath,
+                                    'X-ProtoCms-FileExplorer-PathTarget': targetPath
+                                }
+                            }).then(function (data) {
+                                self.loadError = null;
+                                var errors = [];
+                                if (data.FromBefore.Errors && data.FromBefore.Errors.length > 0) {
+                                    _.forEach(data.FromBefore.Errors,
+                                        function (err) {
+                                            errors.push('(' + data.FromBefore.WebPath + ') ' + err);
+                                        });
+                                }
+                                if (data.ToAfter.Errors && data.ToAfter.Errors.length > 0) {
+                                    _.forEach(data.ToAfter.Errors,
+                                        function (err) {
+                                            errors.push('(' + data.ToAfter.WebPath + ') ' + err);
+                                        });
+                                }
+                                Vue.set(self.renamerIsLoading, fileItem.WebPath, false);
+                                if (errors.length > 0) {
+                                    bootbox.alert("Rename has error.<br/><ul><li>" +
+                                        _.join(errors, '</li><li>') +
+                                        "</li></ul>");
+                                } else {
+                                    self.changeCurrentDir(self.currentDirPath);
+                                }
+                            }, function(err) {
+                                self.loadError = err;
+                                Vue.set(self.renamerIsLoading, fileItem.WebPath, false);
+                            });
+                        });
+                    },
+                    performPasteHere: function() {
+                        var self = this;
+                        if (self.copyBin.length === 0) {
+                            bootbox.alert("No item in copy bin.");
+                            return;
+                        }
+                        bootbox.confirm("Proceed to copy paste?",
+                            function(answer) {
+                                if (!answer) return;
+                                self.copyBinIsLoading = true;
+                                var targetUrl = apiBase + '/file-explorer/copy-to-dir';
+                                var targetPath = self.currentDirPath;
+                                var paths = [];
+                                for (var i = 0; i < self.copyBin.length; i++) {
+                                    paths.push(self.copyBin[i].WebPath);
+                                }
+                                var failures = [];
+                                putils.callApi({
+                                    url: targetUrl,
+                                    method: 'post',
+                                    headers: {
+                                        'X-ProtoCms-FileExplorer-Path': JSON.stringify(paths),
+                                        'X-ProtoCms-FileExplorer-PathTarget': targetPath
+                                    }
+                                }).then(function (data) {
+                                    self.loadError = null;
+                                    self.copyErrors = [];
+                                    _.forEach(data,
+                                        function (dt) {
+                                            var hasErr = false;
+                                            if (dt.FromBefore.Errors && dt.FromBefore.Errors.length > 0) {
+                                                _.forEach(dt.FromBefore.Errors,
+                                                    function (err) {
+                                                        hasErr = true;
+                                                        self.copyErrors.push('(' + dt.FromBefore.WebPath + ') ' + err);
+                                                    });
+                                            }
+                                            if (dt.ToAfter.Errors && dt.ToAfter.Errors.length > 0) {
+                                                _.forEach(dt.ToAfter.Errors,
+                                                    function (err) {
+                                                        hasErr = true;
+                                                        self.copyErrors.push('(' + dt.ToAfter.WebPath + ') ' + err);
+                                                    });
+                                            }
+                                            if (hasErr) {
+                                                failures.push(dt.FromBefore.WebPath);
+                                            }
+                                        });
+                                    var newCopyBin = _.filter(self.copyBin,
+                                        function (binItem) {
+                                            var found = _.find(failures,
+                                                function (flr) {
+                                                    return flr === binItem.WebPath;
+                                                });
+                                            return found !== undefined;
+                                        });
+                                    self.copyBin = newCopyBin;
+                                    self.copyBinIsLoading = false;
+                                }, function (err) {
+                                    self.copyErrors = [];
+                                    self.loadError = err;
+                                    self.copyBinIsLoading = false;
+                                });
+                            });
+                    },
+                    performDeleteAll: function() {
+                        var self = this;
+                        if (self.deleteBin.length === 0) {
+                            bootbox.alert("No item in delete bin.");
+                            return;
+                        }
+                        bootbox.confirm("Proceed to delete all?",
+                            function (answer) {
+                                if (!answer) return;
+                                self.deleteBinIsLoading = true;
+                                var targetUrl = apiBase + '/file-explorer/delete';
+                                var paths = [];
+                                for (var i = 0; i < self.deleteBin.length; i++) {
+                                    paths.push(self.deleteBin[i].WebPath);
+                                }
+                                var failures = [];
+                                putils.callApi({
+                                    url: targetUrl,
+                                    method: 'post',
+                                    headers: {
+                                        'X-ProtoCms-FileExplorer-Path': JSON.stringify(paths)
+                                    }
+                                }).then(function (data) {
+                                    self.loadError = null;
+                                    self.deleteErrors = [];
+                                    _.forEach(data,
+                                        function (dt) {
+                                            var hasErr = false;
+                                            if (dt.Errors && dt.Errors.length > 0) {
+                                                _.forEach(dt.Errors,
+                                                    function (err) {
+                                                        hasErr = true;
+                                                        self.deleteErrors.push('(' + dt.WebPath + ') ' + err);
+                                                    });
+                                            }
+                                            if (hasErr) {
+                                                failures.push(dt.FromBefore.WebPath);
+                                            }
+                                        });
+                                    var newDeleteBin = _.filter(self.deleteBin,
+                                        function (binItem) {
+                                            var found = _.find(failures,
+                                                function (flr) {
+                                                    return flr === binItem.WebPath;
+                                                });
+                                            return found !== undefined;
+                                        });
+                                    self.deleteBin = newDeleteBin;
+                                    self.deleteBinIsLoading = false;
+                                }, function (err) {
+                                    self.deleteErrors = [];
+                                    self.loadError = err;
+                                    self.deleteBinIsLoading = false;
+                                });
+                            });
+                    },
+                    toggleRenamer: function(fileItem) {
+                        var self = this;
+                        if (self.shownRenamerForm[fileItem.WebPath] === undefined) {
+                            Vue.set(self.shownRenamerForm, fileItem.WebPath, true);
+                            Vue.set(self.renamerValues, fileItem.WebPath, '');
+                        } else {
+                            self.shownRenamerForm[fileItem.WebPath] = !self.shownRenamerForm[fileItem.WebPath];
+                        }
+                    },
+                    isInCopyBin: function(fileItem) {
+                        var self = this;
+                        var found = _.find(self.copyBin,
+                            function(binItem) {
+                                return binItem.WebPath === fileItem.WebPath;
+                            });
+                        return found !== undefined;
+                    },
+                    isInDeleteBin: function (fileItem) {
+                        var self = this;
+                        var found = _.find(self.deleteBin,
+                            function (binItem) {
+                                return binItem.WebPath === fileItem.WebPath;
+                            });
+                        return found !== undefined;
+                    },
+                    addToCopyBin: function(fileItem) {
+                        this.copyBin.push(fileItem);
+                    },
+                    remFromCopyBin: function (fileItem) {
+                        var self = this;
+                        var copyBin = _.filter(self.copyBin,
+                            function(binItem) {
+                                return binItem.WebPath !== fileItem.WebPath;
+                            });
+                        self.copyBin = copyBin;
+                    },
+                    clearCopyBin: function() {
+                        this.copyBin = [];
+                    },
+                    addToDeleteBin: function (fileItem) {
+                        this.deleteBin.push(fileItem);
+                    },
+                    remFromDeleteBin: function (fileItem) {
+                        var self = this;
+                        var deleteBin = _.filter(self.deleteBin,
+                            function (binItem) {
+                                return binItem.WebPath !== fileItem.WebPath;
+                            });
+                        self.deleteBin = deleteBin;
+                    },
+                    clearDeleteBin: function () {
+                        this.deleteBin = [];
+                    },
+                    changeActiveTab: function(tabName) {
+                        var self = this;
+                        self.activeTabName = tabName;
+                    },
+                    getFileExtension: function(fileName) {
+                        var ext = '';
+                        var lastDotIdx = fileName.lastIndexOf('.');
+                        if (lastDotIdx !== -1) {
+                            ext = fileName.substr(lastDotIdx);
+                        }
+                        return ext;
+                    },
+                    humanizedFileSize: function (bytes) {
+                        var fileSizeUnits = [
+                            'B',
+                            'KB',
+                            'MB',
+                            'GB',
+                            'TB',
+                            'PB',
+                            'EB',
+                            'ZB'
+                        ];
+
+                        var val = bytes;
+                        var unit = '';
+                        for (var i = 0; i < fileSizeUnits.length; i++) {
+                            unit = fileSizeUnits[i];
+                            if (val < 1024) break;
+                            if (i < fileSizeUnits.length - 1) {
+                                val = val / 1024.0;   
+                            }
+                        }
+                        return val.toFixed(2) + ' ' + unit;
+                    },
+                    showCurrentDirPathSeparator: function (cdpaIdx, pathArrLen) {
+                        var show = cdpaIdx < (pathArrLen - 1);
+                        return show;
+                    },
+                    toggleShowCreateDirForm: function() {
+                        this.showCreateDirForm = !this.showCreateDirForm;
+                    },
+                    noop: function() {}
+                },
+                created: function () {
+                    this.changeCurrentDir('');
+                },
+                mounted: function() {
+                    var self = this;
+                    _.forIn(self.uploadFileInput,
+                        function(ufi, ufiKey) {
+                            var fileinput = $(self.$refs[ufiKey + 'FileInputBox']);
+                            fileinput.fileinput();
+                            fileinput.on('change.bs.fileinput',
+                                function (evt) {
+                                    self.uploadFileInput[ufiKey] = true;
+                                });
+                            fileinput.on('clear.bs.fileinput',
+                                function (evt) {
+                                    self.uploadFileInputErrors[ufiKey] = [];
+                                    self.uploadFileInputLoadErrors[ufiKey] = null;
+                                    self.uploadFileInput[ufiKey] = false;
+                                });
+                        });
+                }
+            };
+
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

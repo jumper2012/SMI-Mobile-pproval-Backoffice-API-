@@ -1,0 +1,279 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms.Fields.Chrono
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="form-group">
+            <label v-html="label"></label>
+            <input type="hidden" v-model="inputVal" />
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-primary" @@click="toggleShowPicker()">
+                        <span v-if="showPickDate">Date</span><span v-if="showPickTime">Time</span>
+                        &nbsp;
+                        <i class="fa fa-calendar" v-if="showPickDate"></i>
+                        <i class="fa fa-clock" v-if="!showPickDate && showPickTime"></i>
+                    </button>
+                </span>
+                <input type="text" class="form-control" v-model="displayInputVal" readonly="1" />
+                <span class="input-group-btn">
+                    <button type="button" @@click="clearDateInput" class="btn btn-warning">
+                        <span>
+                            Clear
+                            &nbsp;<i class="fa fa-close"></i>
+                        </span>
+                    </button>
+                </span>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div v-show="pickerShown" class="well well-sm" style="float: left;">
+                        <div v-if="showPickDate" ref="datePickerBox"></div>
+                        <div class="clearfix"></div>
+                        <div v-if="showPickTime">
+                            <div class="form-group" style="width: 70px; float: left;">
+                                <label class="small">Hours</label>
+                                <select v-model="pickedTime.hour" class="form-control">
+                                    <option v-for="hr in genHourOpts()" :value="hr">{{ formatToDoubleDigits(hr) }}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="width: 70px; float: left;">
+                                <label class="small">Minutes</label>
+                                <select v-model="pickedTime.minute" class="form-control">
+                                    <option v-for="mt in genMinuteOpts()" :value="mt">{{ formatToDoubleDigits(mt) }}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="width: 70px; float: left;">
+                                <label class="small">Seconds</label>
+                                <select v-model="pickedTime.second" class="form-control">
+                                    <option v-for="sd in genMinuteOpts()" :value="sd">{{ formatToDoubleDigits(sd) }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="text-center">
+                            <button class="btn btn-default btn-xs btn-circle" @@click="toggleShowPicker()">
+                                Hide <i class="fa fa-chevron-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span class="help-block" v-html="helpText"></span>
+            <span class="help-block text-danger" v-for="(err, idx) in inputErrors" :key="idx">{{ err }}</span>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var ffm = protoCms.mixins.formFieldMixin;
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-form-field-datetime',
+                mixins: [ffm],
+                props: ['pickerKind'],
+                template: '#@tplId',
+                data: function() {
+                    return {
+                        pickedDate: {
+                            date: -1,
+                            monthZeroBased: -1,
+                            year: -1
+                        },
+                        pickedTime: {
+                            hour: -1,
+                            minute: -1,
+                            second: -1
+                        },
+                        datePickerOnChangeDateEnabled: true,
+                        pickerShown: false
+                    }
+                },
+                computed: {
+                    inputVal: {
+                        get: function() {
+                            return this.getFormValue();
+                        },
+                        set: function(newVal) {
+                            this.setFormValue(newVal);
+                        }
+                    },
+                    showPickDate: function() {
+                        return !this.pickerKind ||
+                            this.pickerKind === '@ChronoFieldPickerKind.DateAndTime.ToString()' ||
+                            this.pickerKind === '@ChronoFieldPickerKind.DateOnly.ToString()';
+                    },
+                    showPickTime: function() {
+                        return !this.pickerKind || this.pickerKind === '@ChronoFieldPickerKind.DateAndTime.ToString()' ||
+                            this.pickerKind === '@ChronoFieldPickerKind.TimeOnly.ToString()';
+                    },
+                    displayInputVal: function () {
+                        if (!this.inputVal) return '';
+                        var mmt = new moment(this.inputVal);
+                        if (this.showPickDate && this.showPickTime) {
+                            return mmt.format('ddd, DD-MMM-YYYY HH:mm:ss (Z)');
+                        } else if (this.showPickDate) {
+                            return mmt.format('ddd, DD-MMM-YYYY (Z)');
+                        } else if (this.showPickTime) {
+                            return mmt.format('HH:mm:ss (Z)');
+                        }
+                        return '';
+                    }
+                },
+                methods: {
+                    clearDateInput: function() {
+                        this.inputVal = null;
+                        this.pickedDate.date = -1;
+                        this.pickedDate.monthZeroBased = -1;
+                        this.pickedDate.year = (new moment()).year();
+                        this.pickedTime.hour = -1;
+                        this.pickedTime.minute = -1;
+                        this.pickedTime.second = -1;
+                        this.timePickerShown = false;
+                        this.datePickerShown = false;
+                    },
+                    updateInputVal: function() {
+                        if (this.pickedDate.date < 1 ||
+                            this.pickedDate.monthZeroBased < 0 ||
+                            !this.pickedDate.year ||
+                            this.pickedDate.year < 1 ||
+                            this.pickedTime.hour < 0 ||
+                            this.pickedTime.minute < 0 ||
+                            this.pickedTime.second < 0) {
+                            this.inputVal = null;
+                        } else {
+                            var momObj = {
+                                years: this.pickedDate.year,
+                                months: this.pickedDate.monthZeroBased,
+                                dates: this.pickedDate.date,
+                                hours: this.pickedTime.hour,
+                                minutes: this.pickedTime.minute,
+                                seconds: this.pickedTime.second
+                            };
+                            var mmt = new moment(momObj);
+                            this.inputVal = mmt.format('YYYY-MM-DDTHH:mm:ssZ');
+                        }
+                    },
+                    toggleShowPicker: function() {
+                        this.pickerShown = !this.pickerShown;
+                    },
+                    formatToDoubleDigits: function (num) {
+                        if (num < 10) {
+                            return '0' + num;
+                        }
+                        return num + '';
+                    },
+                    genHourOpts: function() {
+                        var result = [];
+                        for (var i = 0; i < 24; i++) {
+                            result.push(i);
+                        }
+                        return result;
+                    },
+                    genMinuteOpts: function () {
+                        var result = [];
+                        for (var i = 0; i < 60; i++) {
+                            result.push(i);
+                        }
+                        return result;
+                    }
+                },
+                watch: {
+                    pickedDate: {
+                        deep: true,
+                        handler: function (newVal, oldVal) {
+                            var self = this;
+                            if (self.pickedDate.year >= 1 && self.pickedDate.monthZeroBased >= 0) {
+                                var testMmt = new moment({
+                                    years: self.pickedDate.year,
+                                    months: self.pickedDate.monthZeroBased
+                                });
+                                var dim = testMmt.daysInMonth();
+                                if (self.pickedDate.date > dim) {
+                                    if (self.pickedDate.date >= 1) {
+                                        self.pickedDate.date = 1;
+                                    }
+                                }
+                            }
+                            self.datePickerOnChangeDateEnabled = false;
+                            var dpjq = $(self.$refs.datePickerBox);
+                            if (this.pickedDate.date < 1 ||
+                                this.pickedDate.monthZeroBased < 0 ||
+                                !this.pickedDate.year ||
+                                this.pickedDate.year < 1) {
+                                dpjq.datepicker('update', '');
+                            } else {
+                                var mmt = new moment({
+                                    years: this.pickedDate.year,
+                                    months: this.pickedDate.monthZeroBased,
+                                    dates: this.pickedDate.date
+                                });
+                                dpjq.datepicker('update', mmt.format('YYYY-MM-DD'));
+                            }
+                            self.datePickerOnChangeDateEnabled = true;
+                            self.updateInputVal();
+                        }
+                    },
+                    pickedTime: {
+                        deep: true,
+                        handler: function (newVal, oldVal) {
+                            var self = this;
+                            self.updateInputVal();
+                        }
+                    }
+                },
+                created: function () {
+                    var hasInputVal = putils.getdef(this.inputVal, '').length > 0;
+                    var dateNotOk = true;
+                    if (this.inputVal) {
+                        try {
+                            var mmt = new moment(this.inputVal);
+                            this.pickedDate.date = mmt.date();
+                            this.pickedDate.monthZeroBased = mmt.month();
+                            this.pickedDate.year = mmt.year();
+                            this.pickedTime.hour = mmt.hour();
+                            this.pickedTime.minute = mmt.minute();
+                            this.pickedTime.second = mmt.second();
+                            dateNotOk = false;
+                        } catch (excp) {
+                            console.warn('Date time input invalid for field ' + this.label);
+                        }
+                    }
+                    if (!hasInputVal || dateNotOk) {
+                        this.pickedDate.date = -1;
+                        this.pickedDate.monthZeroBased = -1;
+                        this.pickedDate.year = (new moment()).year();
+                        this.pickedTime.hour = -1;
+                        this.pickedTime.minute = -1;
+                        this.pickedTime.second = -1;
+                    }
+                    if (!this.showPickDate && this.showPickTime) {
+                        this.pickedDate.date = 1;
+                        this.pickedDate.monthZeroBased = 0;
+                        this.pickedDate.year = (new moment()).year();
+                    }
+                },
+                mounted: function () {
+                    var self = this;
+                    var dpjq = $(self.$refs.datePickerBox);
+                    dpjq.datepicker({
+                        format: 'yyyy-mm-dd',
+                        immediateUpdates: true,
+                        todayBtn: true,
+                        todayHighlight: true
+                    });
+                    dpjq.on('changeDate', function () {
+                        if (!self.datePickerOnChangeDateEnabled) return;
+                        var mmt = new moment(dpjq.datepicker('getDate'));
+                        self.pickedDate.date = mmt.date();
+                        self.pickedDate.monthZeroBased = mmt.month();
+                        self.pickedDate.year = mmt.year();
+                    });
+                }
+            }
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

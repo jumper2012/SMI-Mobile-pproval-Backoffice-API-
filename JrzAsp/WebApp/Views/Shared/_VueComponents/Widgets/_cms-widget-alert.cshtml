@@ -1,0 +1,31 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="alert alert-dismissable" :class="alertClass">
+            <div v-html="message"></div>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-widget-alert',
+                template: '#@tplId',
+                props: ['type', 'message'],
+                computed: {
+                    alertClass: function() {
+                        var ty = putils.getdef(this.type, 'info');
+                        return 'alert-' + ty;
+                    }
+                }
+            }
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

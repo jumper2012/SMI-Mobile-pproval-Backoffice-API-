@@ -1,0 +1,51 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <button class="btn btn-circle" :class="checkedButtonClass" type="button" @@click="toggleCheckbox()">
+            <i :class="checkedIconClass"></i>
+            <span v-if="checked">{{ yesLabel }}</span>
+            <span v-else>{{ noLabel }}</span>
+        </button>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var comp = {
+                name: 'cms-widget-toggle-button',
+                template: '#@tplId',
+                props: ['checked', 'yesLabel', 'noLabel', 'size'],
+                data: function() {
+                    return {}
+                },
+                model: {
+                    prop: 'checked',
+                    event: 'toggle'
+                },
+                computed: {
+                    checkedIconClass: function () {
+                        if (this.checked) {
+                            return 'fa fa-toggle-on';
+                        }
+                        return 'fa fa-toggle-off';
+                    },
+                    checkedButtonClass: function () {
+                        var btnCls = this.size ? 'btn-' + this.size : '';
+                        if (this.checked) {
+                            return btnCls +' btn-primary';
+                        }
+                        return btnCls +' btn-default';
+                    }
+                },
+                methods: {
+                    toggleCheckbox: function() {
+                        this.$emit('toggle', !this.checked);
+                    }
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

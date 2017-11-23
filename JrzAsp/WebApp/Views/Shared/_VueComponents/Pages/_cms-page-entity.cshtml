@@ -1,0 +1,471 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var rnd = Randomer.Self.Next();
+    var tplId = $"vue-tpl-{rnd}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="portlet light">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-filter"></i>
+                                <span class="caption-subject bold uppercase">
+                                    Filters
+                                </span>
+                                <span class="caption-helper">
+                                    setup filters and then click 'Reload Table' to apply.
+                                </span>
+                            </div>
+                            <div class="actions">
+                                <a v-show="!tableFiltersHidden && tableFilters && tableFilters.vues"
+                                   class="btn btn-circle btn-primary" @@click="loadTableData">
+                                    Reload Table
+                                    <i class="fa fa-refresh"></i> <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+                                </a>
+                                <a class="btn btn-circle btn-icon-only btn-default" href="javascript:;"
+                                   @@click.stop.prevent="tableFiltersHidden = !tableFiltersHidden">
+                                    <i class="fa fa-eye-slash"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="portlet-body" v-show="!tableFiltersHidden">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <b>Search</b>
+                                    <p class="text-muted">Search according to keywords.</p>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="search keywords..." v-model="tableData.SearchKeywords"/>
+                                    </div>
+                                    <div class="text-right" v-if="hasTableFilters">
+                                        <button type="button" class="btn btn-sm btn-warning" @@click="advancedTableFiltersHidden = !advancedTableFiltersHidden">
+                                            {{ advancedTableFiltersHidden ? 'Show Advanced Filters' : 'Hide Advanced Filters' }}
+                                        </button>
+                                    </div>
+                                </li>
+                                <template v-if="hasTableFilters && !advancedTableFiltersHidden">
+                                    <li class="list-group-item" v-for="(filInfo, filKey) in tableFilters.info" :key="filKey" v-if="tableFilters.form[filKey] && tableFilters.vues[filKey]">
+                                        <div class="row">
+                                            <div class="col-xs-10">
+                                                <b v-if="tableFilters.form[filKey].__IsFilterEnabled">
+                                                    {{ filInfo.Name }}
+                                                </b>
+                                                <b v-else>
+                                                    <small>{{ filInfo.Name }}</small>
+                                                </b>
+                                            </div>
+                                            <div class="col-xs-2 text-right">
+                                                <cms-widget-toggle-button size="xs" yes-label="Enabled" no-label="Disabled" 
+                                                                          v-model="tableFilters.form[filKey].__IsFilterEnabled"/>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted" v-show="tableFilters.form[filKey].__IsFilterEnabled">
+                                            {{ filInfo.Description }}
+                                        </p>
+                                        <div v-show="tableFilters.form[filKey].__IsFilterEnabled">
+                                        <component v-for="(filVue, filVueIdx) in tableFilters.vues[filKey]" :key="filVueIdx"
+                                                   :is="filVue.Name" v-bind="getPropsWithoutDollarType(filVue.Props)"></component>
+                                        </div>
+                                    </li>
+                                </template>
+                            </ul>
+                            <div>
+                                <button type="button" class="btn btn-primary" @@click="loadTableData">
+                                    Reload Table
+                                    <i class="fa fa-refresh"></i> <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="portlet light">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-table"></i>
+                                <span class="caption-subject bold uppercase">
+                                    Data
+                                </span>
+                                <span class="caption-helper">
+                                    Showing page <b>{{ tableData.CurrentPage }}</b> of <b>{{ tableData.TotalPage }}</b>,
+                                    total count is <b>{{ tableData.GlobalCount }}</b>
+                                </span>
+                            </div>
+                            <div class="actions">
+                                <a v-show="tableFiltersHidden" class="btn btn-circle btn-primary" @@click="loadTableData">
+                                    Reload Table
+                                    <i class="fa fa-refresh"></i> <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+                                </a>
+                                <a class="btn btn-circle btn-icon-only btn-default fullscreen" href="javascript:;"> </a>
+                            </div>
+                        </div>
+                        <div class="portlet-body">
+                            <div class="row">
+                                <div class="col-xs-12 col-md-10">
+                                    <ul class="pagination">
+                                        <li v-for="pg in tableData.TotalPage" :class="pg === tableData.CurrentPage ? 'active' : ''">
+                                            <a href="#" @@click.stop.prevent="changePage(pg)">{{ pg }}</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-xs-12 col-md-2">
+                                    <div class="form-group">
+                                        <label>Page Limit</label>
+                                        <select v-model="selectedPageLimit" class="form-control">
+                                            <option v-for="pop in pageLimitOptions" :key="pop.val" :value="pop.val">
+                                                {{ pop.label }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cms-top-table-scroller" ref="cmsContentTableTopScroller">
+                                <div :style="topScrollerStyle"></div>
+                            </div>
+                            <div class="table-scrollable" ref="cmsContentTableContainer">
+                                <table class="table table-bordered table-striped table-condensed cms-content-table" ref="cmsContentTable">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <a href="#" @@click.stop.prevent="changeOrdering()">
+                                                    No.
+                                                    <span v-show="!tableData.SortColumn">
+                                                        <i class="fa fa-sort-amount-desc" v-show="tableData.SortIsDescending"></i>
+                                                        <i class="fa fa-sort-amount-asc" v-show="!tableData.SortIsDescending"></i>
+                                                    </span>
+                                                </a>
+                                            </th>
+                                            <th :data-cms-content-table-header-name="tableActionColumnName">
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </th>
+                                            <th v-for="(tabHead, idx) in tableHeaders" :key="idx" :data-cms-content-table-header-name="tabHead.Name">
+                                                <a v-if="tabHead.Sortable" href="#" @@click.stop.prevent="changeOrdering(tabHead.Name)">
+                                                    {{ tabHead.Label }}
+                                                    <span v-show="tableData.SortColumn === tabHead.Name">
+                                                        <i class="fa fa-sort-amount-desc" v-show="tableData.SortIsDescending"></i>
+                                                        <i class="fa fa-sort-amount-asc" v-show="!tableData.SortIsDescending"></i>
+                                                    </span>
+                                                </a>
+                                                <span v-else>
+                                                    {{ tabHead.Label }}
+                                                </span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(tabData, idxDt) in tableData.Data" :key="idxDt">
+                                            <td>
+                                                {{ idxDt + tableData.StartNumbering }}.
+                                            </td>
+                                            <td>
+                                                <component v-for="(vueComp, idxVc) in getDataValue(tabData, tableActionColumnName)" :is="vueComp.Name"
+                                                           :key="idxVc" v-bind="getPropsWithoutDollarType(vueComp.Props)"></component>
+                                            </td>
+                                            <td v-for="(tabHead, idxHd) in tableHeaders" :key="idxHd">
+                                                <component v-for="(vueComp, idxVc) in getDataValue(tabData, tabHead.Name)" :is="vueComp.Name"
+                                                           :key="idxVc" v-bind="getPropsWithoutDollarType(vueComp.Props)"></component>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <thead v-if="tableData.CurrentCount > 0">
+                                        <tr>
+                                            <th>
+                                                <a href="#" @@click.stop.prevent="changeOrdering()">
+                                                    No.
+                                                    <span v-show="!tableData.SortColumn">
+                                                        <i class="fa fa-sort-amount-desc" v-show="tableData.SortIsDescending"></i>
+                                                        <i class="fa fa-sort-amount-asc" v-show="!tableData.SortIsDescending"></i>
+                                                    </span>
+                                                </a>
+                                            </th>
+                                            <th :data-cms-content-table-header-name="tableActionColumnName">
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </th>
+                                            <th v-for="(tabHead, idx) in tableHeaders" :key="idx" :data-cms-content-table-header-name="tabHead.Name">
+                                                <a v-if="tabHead.Sortable" href="#" @@click.stop.prevent="changeOrdering(tabHead.Name)">
+                                                    {{ tabHead.Label }}
+                                                    <span v-show="tableData.SortColumn === tabHead.Name">
+                                                        <i class="fa fa-sort-amount-desc" v-show="tableData.SortIsDescending"></i>
+                                                        <i class="fa fa-sort-amount-asc" v-show="!tableData.SortIsDescending"></i>
+                                                    </span>
+                                                </a>
+                                                <span v-else>
+                                                    {{ tabHead.Label }}
+                                                </span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-12 col-md-10">
+                                    <ul class="pagination">
+                                        <li v-for="pg in tableData.TotalPage" :class="pg === tableData.CurrentPage ? 'active' : ''">
+                                            <a href="#" @@click.stop.prevent="changePage(pg)">{{ pg }}</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-xs-12 col-md-2">
+                                    <div class="form-group">
+                                        <label>Page Limit</label>
+                                        <select v-model="selectedPageLimit" class="form-control">
+                                            <option v-for="pop in pageLimitOptions" :key="pop.val" :value="pop.val">
+                                                {{ pop.label }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            var apiBase = protoCms.apiBasePath;
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-page-entity',
+                template: '#@tplId',
+                props: ['entityApiName', 'entityTypeId', 'entityTypeName', 'tableActionColumnName'],
+                data: function() {
+                    return {
+                        tableHeaders: [],
+                        tableFilters: {
+                            info: null,
+                            form: null,
+                            vues: null
+                        },
+                        tableData: {
+                            CurrentPage: 1,
+                            TotalPage: 1,
+                            StartNumbering: 1,
+                            GlobalCount: 0,
+                            CurrentCount: 0,
+                            Offset: 0,
+                            Limit: 100,
+                            SearchKeywords: '',
+                            SortColumn: '',
+                            SortIsDescending: false,
+                            ResultShape: '',
+                            Data: []
+                        },
+                        tableFiltersHidden: false,
+                        advancedTableFiltersHidden: true,
+                        tableWidth: 1000,
+                        pageLimitOptions: [
+                            {
+                                val: 1,
+                                label: '1'
+                            },
+                            {
+                                val: 25,
+                                label: '25'
+                            }, {
+                                val: 50,
+                                label: '50'
+                            }, {
+                                val: 100,
+                                label: '100'
+                            }, {
+                                val: 1000,
+                                label: '1000'
+                            }, {
+                                val: 2147483647,
+                                label: 'All'
+                            }
+                        ],
+                        selectedPageLimit: 100,
+                        isLoading: false,
+                        topScrollerMagicHandler: null
+                    };
+                },
+                computed: {
+                    hasTableFilters: function () {
+                        return this.tableFilters &&
+                            this.tableFilters.info &&
+                            _.keys(this.tableFilters.info).length > 0 &&
+                            this.tableFilters.form &&
+                            _.keys(this.tableFilters.form).length > 0 &&
+                            this.tableFilters.vues &&
+                            _.keys(this.tableFilters.vues).length > 0;
+                    },
+                    topScrollerStyle: function() {
+                        return 'height: 1px; width: ' + (this.tableWidth + 2) + 'px';
+                    }
+                },
+                watch: {
+                    selectedPageLimit: function() {
+                        this.tableData.Limit = this.selectedPageLimit;
+                        this.loadTableData();
+                    }
+                },
+                methods: {
+                    loadTableHeaders: function() {
+                        var self = this;
+                        self.isLoading = true;
+                        return putils.callApi({
+                            url: apiBase + '/' + self.entityApiName + '/' + self.entityTypeId + '/table-headers',
+                            method: 'get'
+                        }).then(function(data) {
+                                self.tableHeaders = data;
+                                self.isLoading = false;
+                            },
+                            function(err) {
+                                console.error('Cannot load entity ' + self.entityTypeId + ' table headers', err);
+                                self.isLoading = false;
+                            });
+                    },
+                    loadTableFilters: function() {
+                        var self = this;
+                        self.isLoading = true;
+
+                        var handleError = function (err) {
+                            console.error('Cannot load entity ' + self.entityTypeId + ' table filters', err);
+                            self.isLoading = false;
+                        };
+
+                        var filInfo = putils.callApi({
+                            url: apiBase + '/' + self.entityApiName + '/' + self.entityTypeId + '/table-filters',
+                            method: 'post'
+                        }).then(function (data) {
+                            self.tableFilters.info = data;
+                        }, handleError);
+
+                        var filFm = putils.callApi({
+                            url: apiBase + '/' + self.entityApiName + '/' + self.entityTypeId + '/table-filters-form',
+                            method: 'post'
+                        }).then(function (data) {
+                            self.tableFilters.form = data;
+                        }, handleError);
+
+                        var filVu = putils.callApi({
+                            url: apiBase + '/' + self.entityApiName + '/' + self.entityTypeId + '/table-filters-vue',
+                            method: 'post'
+                        }).then(function(data) {
+                            self.tableFilters.vues = data;
+                        }, handleError);
+
+                        return Promise.all([filInfo, filFm, filVu]).then(function () {
+                            _.forIn(self.tableFilters.form, function (fmV, fmK) {
+                                if (_.has(self.tableFilters.vues, fmK)) {
+                                    for (var i = 0; i < self.tableFilters.vues[fmK].length; i++) {
+                                        self.tableFilters.vues[fmK][i].Props.formObject = fmV;
+                                    }
+                                }
+                            });
+                            self.isLoading = false;
+                        }).catch(handleError);
+                    },
+                    loadTableData: function() {
+                        var self = this;
+                        self.isLoading = true;
+                        var listDataUrl = apiBase + '/' + self.entityApiName + '/' + self.entityTypeId + '/list-filtered?shape=1';
+                        if (putils.getdef(self.tableData.SearchKeywords, '').length > 0) {
+                            listDataUrl = listDataUrl +
+                                '&search=' +
+                                window.encodeURIComponent(self.tableData.SearchKeywords);
+                        }
+                        if (putils.getdef(self.tableData.SortColumn, '').length > 0) {
+                            listDataUrl = listDataUrl +
+                                '&sortColumn=' +
+                                window.encodeURIComponent(self.tableData.SortColumn) +
+                                '&isDescending=' +
+                                (self.tableData.SortIsDescending ? 'true' : 'false');
+                        }
+                        var properPage = self.tableData.CurrentPage >= 1 ? self.tableData.CurrentPage : 1;
+                        var properLimit = self.tableData.Limit >= 1 ? self.tableData.Limit : 100;
+                        var offset = (properPage - 1) * properLimit;
+                        listDataUrl = listDataUrl + '&offset=' + offset + '&limit=' + properLimit;
+                        var listFilterData = JSON.stringify(putils.toSimpleJson(self.tableFilters.form));
+                        return putils.callApi({
+                            url: listDataUrl,
+                            method: 'post',
+                            data: listFilterData,
+                            contentType: 'application/json'
+                        }).then(function(data) {
+                                self.tableData = data;
+                                self.isLoading = false;
+                            },
+                            function(err) {
+                                console.error('Cannot load entity ' + self.entityTypeId + ' table data', err);
+                                self.isLoading = false;
+                            });
+                    },
+                    getDataValue: function(data, colname) {
+                        return _.get(data, colname);
+                    },
+                    changeOrdering: function(colname) {
+                        colname = colname || '';
+                        var self = this;
+                        if (self.isLoading) return;
+                        var changeDir = self.tableData.SortColumn === colname;
+                        self.tableData.SortColumn = colname;
+                        if (changeDir) {
+                            self.tableData.SortIsDescending = !self.tableData.SortIsDescending;
+                        }
+                        self.loadTableData();
+                    },
+                    changePage: function (pg) {
+                        this.tableData.CurrentPage = pg;
+                        this.loadTableData();
+                    },
+                    setupTableTopScroller: function() {
+                        var self = this;
+                        var tbl = $(self.$refs.cmsContentTable);
+                        var tsc = $(self.$refs.cmsContentTableTopScroller);
+                        var tblCont = $(self.$refs.cmsContentTableContainer);
+                        tbl.on('resize',
+                            function() {
+                                self.tableWidth = $(this).outerWidth();
+                            });
+                        tblCont.on('scroll',
+                            function() {
+                                tsc.scrollLeft($(this).scrollLeft());
+                            });
+                        tsc.on('scroll',
+                            function() {
+                                tblCont.scrollLeft($(this).scrollLeft());
+                            });
+
+                        self.tableWidth = tbl.outerWidth();
+                        tsc.scrollLeft(tblCont.scrollLeft());
+                        self.topScrollerMagicHandler = window.setInterval(function() {
+                                self.tableWidth = tbl.outerWidth();
+                                tsc.scrollLeft(tblCont.scrollLeft());
+                            },
+                            333);
+                    }
+                },
+                created: function() {
+                    var self = this;
+                    self.loadTableHeaders().then(function() {
+                        self.loadTableFilters();
+                    }).then(function() {
+                        self.loadTableData();
+                    });
+                },
+                mounted: function() {
+                    this.setupTableTopScroller();
+                    MAG = this;
+                },
+                destroyed: function () {
+                    var self = this;
+                    if (self.topScrollerMagicHandler !== null) {
+                        window.clearInterval(self.topScrollerMagicHandler);
+                        self.topScrollerMagicHandler = null;
+                    }
+                }
+            };
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

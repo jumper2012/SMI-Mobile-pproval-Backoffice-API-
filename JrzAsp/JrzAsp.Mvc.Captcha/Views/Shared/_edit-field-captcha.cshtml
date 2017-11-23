@@ -1,0 +1,46 @@
+﻿@using JrzAsp.Lib.RazorTools
+@using JrzAsp.Mvc.Captcha
+@model string
+
+@{
+    var randomizer = new Random();
+    var htmlContextId = $"simple-captcha-{randomizer.Next()}";
+    var captchaSvc = ModuleDependencyResolver.GetCaptchaService();
+    var captchaId = captchaSvc.GetCaptchaIdFromViewDataDictionary(ViewData);
+}
+
+@using (Html.Section("scripts")) {
+    <script type="text/javascript">
+        $(function() {
+            var masterDiv = $("#@htmlContextId");
+            var userInputTextBox = masterDiv.find(".simple-captcha-user-input");
+            var reloadCaptchaButton = masterDiv.find(".simple-captcha-reload-button");
+            var captchaImgDiv = masterDiv.find(".simple-captcha-image-container");
+            var captchaId = "@captchaId";
+
+            reloadCaptchaButton.click(function() {
+                captchaImgDiv.empty();
+                captchaImgDiv
+                    .append(
+                        '<img alt="Captcha" src="@Url.Action("Index", "Display", new {area = captchaSvc.MvcAreaName, id = captchaId})?t=' +
+                        (new Date()).getTime() +
+                        '" style="max-width: 300px; width: 100%"/>');
+            });
+        });
+    </script>
+}
+
+<div class="simple-captcha-master-container" id="@htmlContextId">
+
+    <input type="text" name="@Html.NameFor(m => m)" class="simple-captcha-user-input form-control" value="@Html.ValueFor(m => m)" style="max-width: 300px"/>
+    <br/>
+
+    <div class="simple-captcha-image-container">
+        <img alt="Captcha" src="@Url.Action("Index", "Display", new {area = captchaSvc.MvcAreaName, id = captchaId})?t=@randomizer.Next()" style="max-width: 300px; width: 100%"/>
+    </div>
+    <button type="button" class="btn btn-block btn-default simple-captcha-reload-button" aria-label="Try another captcha" style="max-width: 300px;">
+        <span class="glyphicon glyphicon-refresh"></span> Try another captcha
+    </button>
+
+</div>
+<div>@Html.ValidationMessageFor(m => m)</div>

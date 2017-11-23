@@ -1,0 +1,51 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div>
+            <div class="well well-sm" v-for="(fit, idx) in formObject.Items" :key="idx">
+                <div class="row">
+                    <div class="col-xs-10">
+                        <cms-form-field-checkbox :form-object="fit" value-path="IsChecked" :label="fit.VueProps.label"
+                                                 :yes-label="fit.VueProps.yesLabel" :no-label="fit.VueProps.noLabel"
+                                                 :help-text="fit.VueProps.helpText"
+                                                 v-show="fit.IsEnabled"></cms-form-field-checkbox>
+                        <label v-show="!fit.IsEnabled" v-html="fit.VueProps.label"></label>
+                    </div>
+                    <div class="col-xs-2 text-right">
+                        <cms-widget-toggle-button size="xs" yes-label="Enabled" no-label="Disabled"
+                                                  v-model="fit.IsEnabled"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var ffm = protoCms.mixins.formFieldMixin;
+            var comp = {
+                name: 'cms-widget-boolean-field-table-filter',
+                template: '#@tplId',
+                mixins: [ffm],
+                data: function() {
+                    return {}
+                },
+                computed: {
+                    inputVal: {
+                        get: function() {
+                            return this.getFormValue();
+                        },
+                        set: function(newVal) {
+                            this.setFormValue(newVal);
+                        }
+                    }
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

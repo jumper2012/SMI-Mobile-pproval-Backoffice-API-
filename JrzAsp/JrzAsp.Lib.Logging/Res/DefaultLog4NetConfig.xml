@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<log4net>
+    <appender name="ApplicationAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/app.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern
+                value="#######################%newline%date [%level] on %logger thread:%thread%newlineFrom: %class at %location%newlineMessage: %message%newlineNDC: %ndc%newlineStacktrace: %stacktracedetail{10}%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="INFO" />
+            <levelMax value="FATAL" />
+        </filter>
+    </appender>
+
+    <appender name="ApplicationMessagesAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/app-messages.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date: %message%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="INFO" />
+            <levelMax value="FATAL" />
+        </filter>
+    </appender>
+
+    <appender name="DebugOnlyAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/debug.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern
+                value="#######################%newline%date [%level] on %logger thread:%thread%newlineFrom: %class at %location%newlineMessage: %message%newlineNDC: %ndc%newlineStacktrace: %stacktracedetail{10}%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="DEBUG" />
+            <levelMax value="DEBUG" />
+        </filter>
+    </appender>
+
+    <appender name="DebugOnlyMessagesAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/debug-messages.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date: %message%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="DEBUG" />
+            <levelMax value="DEBUG" />
+        </filter>
+    </appender>
+
+    <appender name="InfoOnlyAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/info.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern
+                value="#######################%newline%date [%level] on %logger thread:%thread%newlineFrom: %class at %location%newlineMessage: %message%newlineNDC: %ndc%newlineStacktrace: %stacktracedetail{10}%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="INFO" />
+            <levelMax value="INFO" />
+        </filter>
+    </appender>
+
+    <appender name="InfoOnlyMessagesAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/info-messages.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date: %message%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="INFO" />
+            <levelMax value="INFO" />
+        </filter>
+    </appender>
+
+    <appender name="WarnOnlyAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/warn.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern
+                value="#######################%newline%date [%level] on %logger thread:%thread%newlineFrom: %class at %location%newlineMessage: %message%newlineNDC: %ndc%newlineStacktrace: %stacktracedetail{10}%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="WARN" />
+            <levelMax value="WARN" />
+        </filter>
+    </appender>
+
+    <appender name="WarnOnlyMessagesAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/warn-messages.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date: %message%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="WARN" />
+            <levelMax value="WARN" />
+        </filter>
+    </appender>
+
+    <appender name="ErrorOnlyAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/error.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern
+                value="#######################%newline%date [%level] on %logger thread:%thread%newlineFrom: %class at %location%newlineMessage: %message%newlineNDC: %ndc%newlineStacktrace: %stacktracedetail{10}%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="ERROR" />
+            <levelMax value="ERROR" />
+        </filter>
+    </appender>
+
+    <appender name="ErrorOnlyMessagesAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/error-messages.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date: %message%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="ERROR" />
+            <levelMax value="ERROR" />
+        </filter>
+    </appender>
+
+    <appender name="FatalOnlyAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/fatal.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern
+                value="#######################%newline%date [%level] on %logger thread:%thread%newlineFrom: %class at %location%newlineMessage: %message%newlineNDC: %ndc%newlineStacktrace: %stacktracedetail{10}%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="FATAL" />
+            <levelMax value="FATAL" />
+        </filter>
+    </appender>
+
+    <appender name="FatalOnlyMessagesAppender" type="log4net.Appender.RollingFileAppender">
+        <param name="File" value="App_Data/Logs/fatal-messages.log" />
+        <param name="PreserveLogFileNameExtension" value="True" />
+        <param name="StaticLogFileName" value="True" />
+        <param name="RollingStyle" value="Composite" />
+        <param name="DatePattern" value=".yyyy-MM-dd" />
+        <param name="MaximumFileSize" value="1MB" />
+        <param name="MaxSizeRollBackups" value="-1" />
+        <param name="CountDirection" value="1" />
+        <layout type="log4net.Layout.PatternLayout">
+            <conversionPattern value="%date: %message%newline" />
+        </layout>
+        <filter type="log4net.Filter.LevelRangeFilter">
+            <levelMin value="FATAL" />
+            <levelMax value="FATAL" />
+        </filter>
+    </appender>
+
+    <root>
+        <level value="DEBUG" />
+        <appender-ref ref="ApplicationAppender" />
+        <appender-ref ref="DebugOnlyAppender" />
+        <appender-ref ref="InfoOnlyAppender" />
+        <appender-ref ref="WarnOnlyAppender" />
+        <appender-ref ref="ErrorOnlyAppender" />
+        <appender-ref ref="FatalOnlyAppender" />
+        <appender-ref ref="ApplicationMessagesAppender" />
+        <appender-ref ref="DebugOnlyMessagesAppender" />
+        <appender-ref ref="InfoOnlyMessagesAppender" />
+        <appender-ref ref="WarnOnlyMessagesAppender" />
+        <appender-ref ref="ErrorOnlyMessagesAppender" />
+        <appender-ref ref="FatalOnlyMessagesAppender" />
+    </root>
+</log4net>

@@ -1,0 +1,42 @@
+﻿@model Exception
+
+@{
+    var statusCode = Response.StatusCode;
+    var statusDesc = Response.StatusDescription;
+    ViewBag.Title = $"Oops, {statusDesc} ({statusCode})";
+}
+
+<h2 class="text-danger">@ViewBag.Title</h2>
+
+<p class="alert alert-warning">
+    <strong>Check the logs</strong> for more detail at <em>~/App_Data/Logs/</em> folder.
+</p>
+
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>Status Code</th>
+        <td>@statusCode</td>
+    </tr>
+    <tr>
+        <th>Status Description</th>
+        <td>@statusDesc</td>
+    </tr>
+    <tr>
+        <th>Error Messages</th>
+        <td>
+            <pre><code>@Model.Message</code></pre>
+        </td>
+    </tr>
+    <tr>
+        <th>Target Site</th>
+        <td>
+            <pre><code>@Model.TargetSite</code></pre>
+        </td>
+    </tr>
+    <tr>
+        <th>Stack Trace</th>
+        <td>
+            <pre><code>@Model.StackTrace</code></pre>
+        </td>
+    </tr>
+</table>

@@ -1,0 +1,75 @@
+﻿@using JrzAsp.Lib.ProtoCms
+@using WebApp.Features.MetronicTheme
+<!DOCTYPE html>
+<!-- 
+Template Name: Metronic - Responsive Admin Dashboard Template build with Twitter Bootstrap 3.3.6
+Version: 4.5.6
+Author: KeenThemes
+Website: http://www.keenthemes.com/
+Contact: support@keenthemes.com
+Follow: www.twitter.com/keenthemes
+Dribbble: www.dribbble.com/keenthemes
+Like: www.facebook.com/keenthemes
+Purchase: http://themeforest.net/item/metronic-responsive-admin-dashboard-template/4021469?ref=keenthemes
+Renew Support: http://themeforest.net/item/metronic-responsive-admin-dashboard-template/4021469?ref=keenthemes
+License: You must have a valid license purchased only from themeforest(the above link) in order to legally use the theme for your project.
+-->
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+@{
+    var pageTitle = (ViewBag.Title as string)?.Trim();
+    var pageSubtitle = (ViewBag.Subtitle as string)?.Trim();
+    var masterTitle = string.Join(" | ", new[] { pageTitle, pageSubtitle, ProtoCmsAppSettings.WebPageBaseTitle }
+                            .Where(x=>!string.IsNullOrWhiteSpace(x)));
+}
+<html lang="en">
+    <!--<![endif]-->
+    <!-- BEGIN HEAD -->
+    <head>
+        <meta charset="utf-8" />
+        <title>@masterTitle</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
+        <meta content="CMS Dashboard" name="description" />
+        <meta content="Jrz" name="author" />
+        @{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/_Styles.cshtml"); }
+        <link rel="shortcut icon" href="~/favicon.ico" />
+    </head>
+    <!-- END HEAD -->
+    <!-- BEGIN BODY -->
+    <body class="page-header-fixed page-sidebar-closed-hide-logo page-container-bg-solid page-content-white page-md">
+        @{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/_Header.cshtml"); }
+        <!-- BEGIN HEADER & CONTENT DIVIDER -->
+        <div class="clearfix"> </div>
+        <!-- END HEADER & CONTENT DIVIDER -->
+        <!-- BEGIN CONTAINER -->
+        <div class="page-container">
+            @{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/Container/_Sidebar.cshtml"); }
+            <!-- BEGIN CONTENT -->
+            <div class="page-content-wrapper">
+                <!-- BEGIN CONTENT BODY -->
+                <div class="page-content">
+                    <!-- BEGIN PAGE HEADER-->
+                    @{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/Container/_PageBar.cshtml"); }
+                    <!-- BEGIN PAGE TITLE-->
+                    <h3 class="page-title">
+                        <div>@pageTitle</div>
+                        <small>@pageSubtitle</small>
+                    </h3>
+                    <!-- END PAGE TITLE-->
+                    <!-- END PAGE HEADER-->
+                    @RenderBody()
+                    <div id="cms-modal-widget-container"></div>
+                </div>
+                <!-- END CONTENT BODY -->
+            </div>
+            <!-- END CONTENT -->
+            @*@{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/Container/_QuickSidebar.cshtml"); }*@
+        </div>
+        <!-- END CONTAINER -->
+        @{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/_Footer.cshtml"); }
+        @{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/_Scripts.cshtml"); } 
+    </body>
+    <!-- END BODY -->
+</html>

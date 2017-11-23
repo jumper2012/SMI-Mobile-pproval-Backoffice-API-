@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JrzAsp.Lib.TextUtilities</name>
+    </assembly>
+    <members>
+        <member name="M:JrzAsp.Lib.TextUtilities.StringToUrlSlugExtensions.ToUrlSlug(System.String)">
+            <summary>
+            See http://stackoverflow.com/a/2161706
+            </summary>
+            <param name="str">the string to be url slugged</param>
+            <returns>url slug version of str</returns>
+        </member>
+    </members>
+</doc>

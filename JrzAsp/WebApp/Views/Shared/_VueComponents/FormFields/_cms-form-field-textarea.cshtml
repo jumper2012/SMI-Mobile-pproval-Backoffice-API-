@@ -1,0 +1,46 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="form-group">
+            <label v-html="label"></label>
+            <textarea class="form-control" :placeholder="placeholder" v-model="inputVal" :rows="textareaRealRows"></textarea>
+            <span class="help-block" v-html="helpText"></span>
+            <span class="help-block text-danger" v-for="(err, idx) in inputErrors" :key="idx">{{ err }}</span>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var putils = protoCms.utils;
+            var ffm = protoCms.mixins.formFieldMixin;
+            var comp = {
+                name: 'cms-form-field-textarea',
+                mixins: [ffm],
+                template: '#@tplId',
+                props: ['textareaRows'],
+                computed: {
+                    textareaRealRows: function() {
+                        var self = this;
+                        var rows = putils.getdef(self.textareaRows, 5);
+                        if (rows < 1) {
+                            rows = 5;
+                        }
+                        return rows;
+                    },
+                    inputVal: {
+                        get: function() {
+                            return this.getFormValue();
+                        },
+                        set: function(newVal) {
+                            this.setFormValue(newVal);
+                        }
+                    }
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

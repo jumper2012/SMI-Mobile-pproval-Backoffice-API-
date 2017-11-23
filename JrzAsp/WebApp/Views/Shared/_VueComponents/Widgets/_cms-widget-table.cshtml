@@ -1,0 +1,37 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <table class="table table-condensed table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th v-for="th in thead" v-html="th"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="tb in tbody">
+                    <td v-for="tbi in tb" v-html="tbi"></td>
+                </tr>
+            </tbody>
+        </table>
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            var putils = protoCms.utils;
+            var comp = {
+                name: 'cms-widget-table',
+                template: '#@tplId',
+                props: ['thead', 'tbody'],
+                data: function() {
+                    return {};
+                }
+            }
+
+            Vue.component(comp.name, comp);
+        })
+    </script>
+}

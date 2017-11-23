@@ -1,0 +1,455 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CFF4440B-0630-437C-B577-924FF96D6530}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>JrzAsp.Lib.ProtoCms</RootNamespace>
+    <AssemblyName>JrzAsp.Lib.ProtoCms</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\JrzAsp.Lib.ProtoCms.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\JrzAsp.Lib.ProtoCms.xml</DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.Extensions, Version=0.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.Extensions.0.0.2\lib\net40\EntityFramework.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Owin.2.2.1\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Cors, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Cors.3.1.0\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Cookies, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.2.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.OAuth, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.2.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.2.3\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.2.3\lib\net45\System.Web.Http.Cors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.Owin, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.3\lib\net45\System.Web.Http.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WebMatrix.Data, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.Data.1.0.20105.408\lib\net40\WebMatrix.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="WebMatrix.WebData, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.WebData.3.2.3\lib\net45\WebMatrix.WebData.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AutoDependencyBinder.cs" />
+    <Compile Include="Content\API\ContentApiController.cs" />
+    <Compile Include="Content\API\ContentDevHelpApiController.cs" />
+    <Compile Include="Content\API\ContentFieldApiInfo.cs" />
+    <Compile Include="Content\API\ContentHandlerApiInfo.cs" />
+    <Compile Include="Content\API\ContentListApiResult.cs" />
+    <Compile Include="Content\API\ContentModificationApiResult.cs" />
+    <Compile Include="Content\API\ContentShapedApiModelBuilder.cs" />
+    <Compile Include="Content\API\ContentTableFilterHandlerApiInfo.cs" />
+    <Compile Include="Content\Forms\ContentModifierForm.cs" />
+    <Compile Include="Content\Forms\ContentTableFilterForm.cs" />
+    <Compile Include="Content\Models\CombinedContentModifyOperation.cs" />
+    <Compile Include="Content\Models\CombinedContentWhereCondition.cs" />
+    <Compile Include="Content\Models\ContentField.cs" />
+    <Compile Include="Content\Models\ContentFieldColumn.cs" />
+    <Compile Include="Content\Models\ContentFieldConfiguration.cs" />
+    <Compile Include="Content\Models\ContentFieldDefinition.cs" />
+    <Compile Include="Content\Models\ContentFieldSpec.cs" />
+    <Compile Include="Content\Models\ContentFieldValidator.cs" />
+    <Compile Include="Content\Models\ContentFieldValidatorConfiguration.cs" />
+    <Compile Include="Content\Models\ContentModifyOperation.cs" />
+    <Compile Include="Content\Models\ContentPreviewPart.cs" />
+    <Compile Include="Content\Models\ContentSelectFieldOptionsHandlerParam.cs" />
+    <Compile Include="Content\Models\ContentTableFilterOperation.cs" />
+    <Compile Include="Content\Models\ContentTableHeader.cs" />
+    <Compile Include="Content\Models\ContentType.cs" />
+    <Compile Include="Content\Models\ContentWhereCondition.cs" />
+    <Compile Include="Content\Models\ProtoContent.cs" />
+    <Compile Include="Content\Models\ProtoContentDynamic.cs" />
+    <Compile Include="Content\Models\ProtoField.cs" />
+    <Compile Include="Content\Permissions\ListContentPermission.cs" />
+    <Compile Include="Content\Permissions\ModifyContentPermission.cs" />
+    <Compile Include="Content\Permissions\ViewContentPermission.cs" />
+    <Compile Include="Content\Services\ContentFinder.cs" />
+    <Compile Include="Content\Services\ContentHandlersForAllFields.cs" />
+    <Compile Include="Content\Services\ContentModifier.cs" />
+    <Compile Include="Content\Services\ContentPermissionsProvider.cs" />
+    <Compile Include="Content\Services\ContentSelectFieldOptionsHandler.cs" />
+    <Compile Include="Content\Services\ContentVueProvider.cs" />
+    <Compile Include="Content\Services\IContentFieldFinder.cs" />
+    <Compile Include="Content\Services\IContentFieldModifier.cs" />
+    <Compile Include="Content\Services\IContentFinder.cs" />
+    <Compile Include="Content\Services\IContentHandler.cs" />
+    <Compile Include="Content\Services\IContentModifier.cs" />
+    <Compile Include="Content\Services\IContentModifierHandler.cs" />
+    <Compile Include="Content\Services\IContentModifyOperationsProvider.cs" />
+    <Compile Include="Content\Services\IContentSearchHandler.cs" />
+    <Compile Include="Content\Services\IContentSortHandler.cs" />
+    <Compile Include="Content\Services\IContentTableActionsHandler.cs" />
+    <Compile Include="Content\Services\IContentTableFilterHandler.cs" />
+    <Compile Include="Content\Services\IContentTypesProvider.cs" />
+    <Compile Include="Content\Services\IContentWhereConditionsProvider.cs" />
+    <Compile Include="Content\Services\IContentWhereHandler.cs" />
+    <Compile Include="Content\Services\StandardContentWhereConditionsProvider.cs" />
+    <Compile Include="Content\Services\StandardContentWhereHandler.cs" />
+    <Compile Include="Core\Models\IHaveTimestamps.cs" />
+    <Compile Include="Core\Models\IModificationApiResult.cs" />
+    <Compile Include="Core\Models\ProtoCmsRuntimeContext.cs" />
+    <Compile Include="Core\Permissions\AccessCmsPermission.cs" />
+    <Compile Include="Core\Permissions\CorePermissionsProvider.cs" />
+    <Compile Include="Database\IProtoCmsDbContext.cs" />
+    <Compile Include="Datum\API\DatumApiController.cs" />
+    <Compile Include="Datum\API\DatumDevHelpApiController.cs" />
+    <Compile Include="Datum\API\DatumHandlerApiInfo.cs" />
+    <Compile Include="Datum\API\DatumListApiResult.cs" />
+    <Compile Include="Datum\API\DatumModificationApiResult.cs" />
+    <Compile Include="Datum\API\DatumShapedApiModelBuilder.cs" />
+    <Compile Include="Datum\Dependencies\DatumDependencyModule.cs" />
+    <Compile Include="Datum\Forms\CommonDatumModifierMetadataForm.cs" />
+    <Compile Include="Datum\Models\CombinedDatumModifyOperation.cs" />
+    <Compile Include="Datum\Models\CombinedDatumWhereCondition.cs" />
+    <Compile Include="Datum\Models\DatumModifyOperation.cs" />
+    <Compile Include="Datum\Models\DatumSelectFieldOptionsHandlerParam.cs" />
+    <Compile Include="Datum\Models\DatumType.cs" />
+    <Compile Include="Datum\Models\DatumWhereCondition.cs" />
+    <Compile Include="Datum\Permissions\DatumPermissionCustomProps.cs" />
+    <Compile Include="Datum\Permissions\ListDatumPermission.cs" />
+    <Compile Include="Datum\Permissions\ModifyDatumPermission.cs" />
+    <Compile Include="Datum\Permissions\ViewDatumPermission.cs" />
+    <Compile Include="Datum\Services\DatumSelectFieldOptionsHandler.cs" />
+    <Compile Include="Datum\Services\DatumFinder.cs" />
+    <Compile Include="Datum\Services\DatumModifier.cs" />
+    <Compile Include="Datum\Services\DatumPermissionsProvider.cs" />
+    <Compile Include="Datum\Services\DatumVueProvider.cs" />
+    <Compile Include="Datum\Services\IDatumFinder.cs" />
+    <Compile Include="Datum\Services\IDatumGetterHandler.cs" />
+    <Compile Include="Datum\Services\IDatumHandler.cs" />
+    <Compile Include="Datum\Services\IDatumModifier.cs" />
+    <Compile Include="Datum\Services\IDatumModifierHandler.cs" />
+    <Compile Include="Datum\Services\IDatumModifyOperationsProvider.cs" />
+    <Compile Include="Datum\Services\IDatumPermissionsHandler.cs" />
+    <Compile Include="Datum\Services\IDatumSearchHandler.cs" />
+    <Compile Include="Datum\Services\IDatumSortHandler.cs" />
+    <Compile Include="Datum\Services\IDatumTableActionsHandler.cs" />
+    <Compile Include="Datum\Services\IDatumTableFilterHandler.cs" />
+    <Compile Include="Datum\Services\IDatumTypesProvider.cs" />
+    <Compile Include="Datum\Services\IDatumViewerHandler.cs" />
+    <Compile Include="Datum\Services\IDatumWhereConditionsProvider.cs" />
+    <Compile Include="Datum\Services\IDatumWhereHandler.cs" />
+    <Compile Include="Datum\Services\StandardModifyOperationsProvider.cs" />
+    <Compile Include="Fields\Boolean\BooleanField.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldConfiguration.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldFinder.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldModifier.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldModifierForm.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldTableFilterForm.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldTableFilterFormItem.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldTableFilterHandler.cs" />
+    <Compile Include="Fields\Boolean\BooleanFieldWhereConditionsProvider.cs" />
+    <Compile Include="Fields\Chrono\ChronoField.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldConfiguration.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldFinder.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldModifier.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldModifierForm.cs" />
+    <Compile Include="Fields\Chrono\ChronoSearchInfo.cs" />
+    <Compile Include="Fields\Chrono\ChronoUtils.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldTableFilterForm.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldTableFilterFormItem.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldTableFilterHandler.cs" />
+    <Compile Include="Fields\Chrono\ChronoFieldWhereConditionsProvider.cs" />
+    <Compile Include="Fields\Common\CommonField.cs" />
+    <Compile Include="Fields\Common\CommonFieldConfiguration.cs" />
+    <Compile Include="Fields\Common\CommonFieldFinder.cs" />
+    <Compile Include="Fields\Common\CommonFieldModifier.cs" />
+    <Compile Include="Fields\Common\CommonFieldModifierForm.cs" />
+    <Compile Include="Fields\Common\CommonFieldModifyOperationsProvider.cs" />
+    <Compile Include="Fields\Common\CommonFieldTableActionsHandler.cs" />
+    <Compile Include="Fields\FauxUrlSlug\API\FauxUrlSlugApiMultiResult.cs" />
+    <Compile Include="Fields\FauxUrlSlug\API\FauxUrlSlugApiResult.cs" />
+    <Compile Include="Fields\FauxUrlSlug\API\FauxUrlSlugDevHelpApiController.cs" />
+    <Compile Include="Fields\FauxUrlSlug\FauxUrlSlugField.cs" />
+    <Compile Include="Fields\FauxUrlSlug\FauxUrlSlugFieldConfiguration.cs" />
+    <Compile Include="Fields\FauxUrlSlug\FauxUrlSlugFieldFinder.cs" />
+    <Compile Include="Fields\FauxUrlSlug\FauxUrlSlugFieldModifier.cs" />
+    <Compile Include="Fields\FauxUrlSlug\FauxUrlSlugService.cs" />
+    <Compile Include="Fields\FauxUrlSlug\IFauxUrlSlugGenerator.cs" />
+    <Compile Include="Fields\FauxUrlSlug\IFauxUrlSlugService.cs" />
+    <Compile Include="Fields\FilePicker\FilePickerField.cs" />
+    <Compile Include="Fields\FilePicker\FilePickerFieldConfiguration.cs" />
+    <Compile Include="Fields\FilePicker\FilePickerFieldFinder.cs" />
+    <Compile Include="Fields\FilePicker\FilePickerFieldModifier.cs" />
+    <Compile Include="Fields\FilePicker\FilePickerFieldModifierForm.cs" />
+    <Compile Include="Fields\FilePicker\FileExtensionValidator.cs" />
+    <Compile Include="Fields\FilePicker\FileExtensionValidatorConfiguration.cs" />
+    <Compile Include="Fields\Number\NumberFieldTableFilterForm.cs" />
+    <Compile Include="Fields\Number\NumberFieldTableFilterFormItem.cs" />
+    <Compile Include="Fields\Number\NumberFieldTableFilterHandler.cs" />
+    <Compile Include="Fields\Number\NumberFieldWhereConditionsProvider.cs" />
+    <Compile Include="Fields\Number\NumberField.cs" />
+    <Compile Include="Fields\Number\NumberFieldConfiguration.cs" />
+    <Compile Include="Fields\Number\NumberFieldFinder.cs" />
+    <Compile Include="Fields\Number\NumberFieldModifier.cs" />
+    <Compile Include="Fields\Number\NumberFieldModifierForm.cs" />
+    <Compile Include="Fields\Number\NumberFieldRangeValidator.cs" />
+    <Compile Include="Fields\Number\NumberFieldRangeValidatorConfiguration.cs" />
+    <Compile Include="Fields\Publishing\PublishingField.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldConfiguration.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldFinder.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldModifier.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldModifierForm.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldModifyOperationsProvider.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldTableActionsHandler.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldTableFilterForm.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldTableFilterHandler.cs" />
+    <Compile Include="Fields\Publishing\PublishingFieldWhereConditionsProvider.cs" />
+    <Compile Include="Fields\Select\API\SelectFieldOptionGetAllApiRequest.cs" />
+    <Compile Include="Fields\Select\API\SelectFieldOptionGetDisplayMultiApiRequest.cs" />
+    <Compile Include="Fields\Select\API\SelectFieldOptionGetDisplayApiRequest.cs" />
+    <Compile Include="Fields\Select\SelectFieldOption.cs" />
+    <Compile Include="Fields\Select\API\SelectFieldOptionsApiController.cs" />
+    <Compile Include="Fields\Select\API\SelectFieldOptionsDevHelpApiController.cs" />
+    <Compile Include="Fields\Select\API\SelectFieldOptionsGetAllApiResult.cs" />
+    <Compile Include="Fields\Select\ISelectFieldOptionsHandler.cs" />
+    <Compile Include="Fields\Select\ISelectFieldOptionsManager.cs" />
+    <Compile Include="Fields\Select\SelectField.cs" />
+    <Compile Include="Fields\Select\SelectFieldConfiguration.cs" />
+    <Compile Include="Fields\Select\SelectFieldFinder.cs" />
+    <Compile Include="Fields\Select\SelectFieldModifier.cs" />
+    <Compile Include="Fields\Select\SelectFieldModifierForm.cs" />
+    <Compile Include="Fields\Select\SelectFieldOptionsManager.cs" />
+    <Compile Include="Fields\SimpleField\SimpleContentField.cs" />
+    <Compile Include="Fields\SimpleField\SimpleContentFieldModifierForm.cs" />
+    <Compile Include="Fields\SimpleField\SimpleFieldRequiredValidator.cs" />
+    <Compile Include="Fields\SimpleField\SimpleFieldRequiredValidatorConfiguration.cs" />
+    <Compile Include="Fields\Text\TextField.cs" />
+    <Compile Include="Fields\Text\TextFieldConfiguration.cs" />
+    <Compile Include="Fields\Text\TextFieldFinder.cs" />
+    <Compile Include="Fields\Text\TextFieldLengthValidator.cs" />
+    <Compile Include="Fields\Text\TextFieldLengthValidatorConfiguration.cs" />
+    <Compile Include="Fields\Text\TextFieldModifier.cs" />
+    <Compile Include="Fields\Text\TextFieldModifierForm.cs" />
+    <Compile Include="Fields\Text\TextFieldRegexValidator.cs" />
+    <Compile Include="Fields\Text\TextFieldRegexValidatorConfiguration.cs" />
+    <Compile Include="Fields\Trashing\TrashingField.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldConfiguration.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldFinder.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldModifier.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldModifierForm.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldModifyOperationsProvider.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldTableActionsHandler.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldTableFilterForm.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldTableFilterHandler.cs" />
+    <Compile Include="Fields\Trashing\TrashingFieldWhereConditionsProvider.cs" />
+    <Compile Include="FileSys\API\FileExplorerApiController.cs" />
+    <Compile Include="FileSys\API\FileExplorerDevHelpApiController.cs" />
+    <Compile Include="FileSys\API\FileExplorerUploadApiRequest.cs" />
+    <Compile Include="FileSys\ByteUtils.cs" />
+    <Compile Include="FileSys\HttpMultipartParser.cs" />
+    <Compile Include="FileSys\FileExplorerHandler.cs" />
+    <Compile Include="FileSys\FileExplorerItem.cs" />
+    <Compile Include="FileSys\FileExplorerManager.cs" />
+    <Compile Include="FileSys\FileExplorerOperationResult.cs" />
+    <Compile Include="FileSys\FileExplorerMoveResult.cs" />
+    <Compile Include="FileSys\FileExplorerVueProvider.cs" />
+    <Compile Include="FileSys\IFileExplorerHandler.cs" />
+    <Compile Include="FileSys\IFileExplorerManager.cs" />
+    <Compile Include="FileSys\Permissions\FileExplorerPermissionsProvider.cs" />
+    <Compile Include="FileSys\Permissions\ManageFileExplorerPermission.cs" />
+    <Compile Include="GenericTypeInfo.cs" />
+    <Compile Include="IAlwaysFreshDependency.cs" />
+    <Compile Include="IDependencyModule.cs" />
+    <Compile Include="IDependencyProvider.cs" />
+    <Compile Include="IGlobalSingletonDependency.cs" />
+    <Compile Include="IPerRequestDependency.cs" />
+    <Compile Include="IProtoCmsMainUrlsProvider.cs" />
+    <Compile Include="Jsonizer.cs" />
+    <Compile Include="Mvc\Security\AuthorizeMvcByProtoPermissionAttribute.cs" />
+    <Compile Include="OAuth\ConfigureProtoCmsOAuth.cs" />
+    <Compile Include="OAuth\Models\ProtoOAuthApplicationType.cs" />
+    <Compile Include="OAuth\Models\ProtoOAuthClient.cs" />
+    <Compile Include="OAuth\Models\ProtoOAuthRefreshToken.cs" />
+    <Compile Include="OAuth\Providers\ProtoCmsAuthorizationServerProvider.cs" />
+    <Compile Include="OAuth\Providers\ProtoCmsRefreshTokenProvider.cs" />
+    <Compile Include="OAuth\Services\IProtoOAuthManager.cs" />
+    <Compile Include="OAuth\Services\ProtoOAuthManager.cs" />
+    <Compile Include="Permission\Datum\PermissionDatumGetterHandler.cs" />
+    <Compile Include="Permission\Datum\PermissionDatumPermissionsHandler.cs" />
+    <Compile Include="Permission\Datum\PermissionDatumSearchHandler.cs" />
+    <Compile Include="Permission\Datum\PermissionDatumSortHandler.cs" />
+    <Compile Include="Permission\Datum\PermissionDatumTypeProvider.cs" />
+    <Compile Include="Permission\Datum\PermissionDatumViewerHandler.cs" />
+    <Compile Include="Permission\Models\ProtoPermission.cs" />
+    <Compile Include="Permission\Models\ProtoPermissionsMap.cs" />
+    <Compile Include="Permission\Services\IPermissionManager.cs" />
+    <Compile Include="Permission\Services\IPermissionsProvider.cs" />
+    <Compile Include="Permission\Services\PermissionManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProtoCmsAppSettings.cs" />
+    <Compile Include="ProtoEngine.cs" />
+    <Compile Include="Role\Models\IProtoRole.cs" />
+    <Compile Include="Role\Models\ProtoRoleProjection.cs" />
+    <Compile Include="Role\Models\RequiredRoleInfo.cs" />
+    <Compile Include="Role\Services\IProtoRoleManager.cs" />
+    <Compile Include="Setting\API\SiteSettingApiController.cs" />
+    <Compile Include="Setting\API\SiteSettingDevHelpApiController.cs" />
+    <Compile Include="Setting\API\SiteSettingModificationApiResult.cs" />
+    <Compile Include="Setting\CoreSettings\WelcomeCard\WelcomeCardSetting.cs" />
+    <Compile Include="Setting\CoreSettings\WelcomeCard\WelcomeCardSettingForm.cs" />
+    <Compile Include="Setting\CoreSettings\WelcomeCard\WelcomeCardSettingHandler.cs" />
+    <Compile Include="Setting\CoreSettings\WelcomeCard\WelcomeCardSettingProvider.cs" />
+    <Compile Include="Setting\Database\ProtoSettingField.cs" />
+    <Compile Include="Setting\Models\SiteSetting.cs" />
+    <Compile Include="Setting\Models\SiteSettingModifierForm.cs" />
+    <Compile Include="Setting\Models\SiteSettingSpec.cs" />
+    <Compile Include="Setting\Permissions\ModifySiteSettingPermission.cs" />
+    <Compile Include="Setting\Permissions\ViewSiteSettingPermission.cs" />
+    <Compile Include="Setting\Services\ISiteSettingHandler.cs" />
+    <Compile Include="Setting\Services\ISiteSettingManager.cs" />
+    <Compile Include="Setting\Services\ISiteSettingsProvider.cs" />
+    <Compile Include="Setting\Services\SettingPermissionsProvider.cs" />
+    <Compile Include="Setting\Services\SettingVueProvider.cs" />
+    <Compile Include="Setting\Services\SiteSettingManager.cs" />
+    <Compile Include="User\Models\IProtoUser.cs" />
+    <Compile Include="User\Models\ProtoUserProjection.cs" />
+    <Compile Include="User\Services\IProtoUserManager.cs" />
+    <Compile Include="Vue\Models\VueActionTrigger.cs" />
+    <Compile Include="Vue\Models\VueButton.cs" />
+    <Compile Include="Vue\Models\VueComponentDefinition.cs" />
+    <Compile Include="Vue\Models\VueTableWidget.cs" />
+    <Compile Include="Vue\Models\VueHtmlWidget.cs" />
+    <Compile Include="Vue\Models\VueLink.cs" />
+    <Compile Include="Vue\Models\VueMenu.cs" />
+    <Compile Include="Vue\Models\VueMenuItem.cs" />
+    <Compile Include="Vue\Models\VueMenuItemCategory.cs" />
+    <Compile Include="Vue\Services\IVueManager.cs" />
+    <Compile Include="Vue\Services\IVueProvider.cs" />
+    <Compile Include="Vue\Services\VueManager.cs" />
+    <Compile Include="WebApi\API\BaseProtoApiController.cs" />
+    <Compile Include="WebApi\Cors\FilePathCorsEnablerHttpModule.cs" />
+    <Compile Include="WebApi\Json\DefaultJsonSerializerSettingsProvider.cs" />
+    <Compile Include="WebApi\Routing\RoutePrefixProtoCmsAttribute.cs" />
+    <Compile Include="WebApi\Security\AuthorizeByProtoPermissionsAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JrzAsp.Lib.EntityFrameworkUtilities\JrzAsp.Lib.EntityFrameworkUtilities.csproj">
+      <Project>{ce1511d3-6847-4985-afbf-aef0887efd78}</Project>
+      <Name>JrzAsp.Lib.EntityFrameworkUtilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JrzAsp.Lib.QueryableUtilities\JrzAsp.Lib.QueryableUtilities.csproj">
+      <Project>{2e3b0fb6-b5e7-48c8-bccb-e19e89a1a767}</Project>
+      <Name>JrzAsp.Lib.QueryableUtilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JrzAsp.Lib.RepoPattern\JrzAsp.Lib.RepoPattern.csproj">
+      <Project>{19913b06-9d7a-457b-8ae7-285db06d8be7}</Project>
+      <Name>JrzAsp.Lib.RepoPattern</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JrzAsp.Lib.TextUtilities\JrzAsp.Lib.TextUtilities.csproj">
+      <Project>{f8f35a2c-1349-4144-b690-ffc5ce38383c}</Project>
+      <Name>JrzAsp.Lib.TextUtilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JrzAsp.Lib.TypeUtilities\JrzAsp.Lib.TypeUtilities.csproj">
+      <Project>{5f0d786b-5894-4b66-af6f-31cd8cb763a6}</Project>
+      <Name>JrzAsp.Lib.TypeUtilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="User\API\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,59 @@
+﻿@using JrzAsp.Lib.RazorTools
+@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms
+@using JrzAsp.Lib.ProtoCms.Vue.Services
+@{
+    var dp = ProtoEngine.GetDependencyProvider();
+    var vueMgr = dp.GetService<IVueManager>();
+}
+@foreach (var pv in vueMgr.RequiredPartialViews.Where(x => !string.IsNullOrWhiteSpace(x))) {
+    Html.RenderPartial(pv);
+}
+<!--[if lt IE 9]>
+    <script src="~/Content/MetronicTheme/assets/global/plugins/respond.min.js"></script>
+    <script src="~/Content/MetronicTheme/assets/global/plugins/excanvas.min.js"></script>
+<![endif]-->
+<!-- BEGIN CORE PLUGINS -->
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_0A_CORE_PLUGINS)
+<script src="~/Content/MetronicTheme/assets/global/plugins/jquery.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/js.cookie.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
+@Scripts.Render("~/bundles/lodash")
+@Scripts.Render("~/bundles/vue")
+@Scripts.Render("~/bundles/protocms")
+<script>
+    protoCms.apiBasePath = '@ProtoCmsAppSettings.ApiRoutePrefix';
+</script>
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_0B_CORE_PLUGINS)
+<!-- END CORE PLUGINS -->
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_1A_PAGE_PLUGINS)
+<script src="~/Content/MetronicTheme/assets/global/plugins/bootbox/bootbox.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/jquery-ui/jquery-ui.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/moment.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/ckeditor/ckeditor.js" type="text/javascript"></script>
+<script src="~/Scripts/redactor/redactor.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.js" type="text/javascript"></script>
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_1B_PAGE_PLUGINS)
+<!-- END PAGE LEVEL PLUGINS -->
+<!-- BEGIN THEME GLOBAL SCRIPTS -->
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_2A_THEME_GLOBAL)
+<script src="~/Content/MetronicTheme/assets/global/scripts/app.min.js" type="text/javascript"></script>
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_2B_THEME_GLOBAL)
+<!-- END THEME GLOBAL SCRIPTS -->
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_3A_PAGE)
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_3B_PAGE)
+<!-- END PAGE LEVEL PLUGINS -->
+<!-- BEGIN THEME LAYOUT SCRIPTS -->
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_4A_THEME_LAYOUT)
+<script src="~/Content/MetronicTheme/assets/layouts/layout/scripts/layout.min.js" type="text/javascript"></script>
+<script src="~/Content/MetronicTheme/assets/layouts/global/scripts/quick-sidebar.min.js" type="text/javascript"></script>
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_4B_THEME_LAYOUT)
+<!-- END THEME LAYOUT SCRIPTS -->
+@Html.RenderSection(MetronicLayoutSections.SCRIPT_9Z_OTHERS)

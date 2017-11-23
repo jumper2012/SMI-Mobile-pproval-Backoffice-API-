@@ -1,0 +1,25 @@
+﻿@using WebApp.Features.FauxUrlSlugMvc
+@model FauxUrlSlugContentModel
+    
+@{
+    ViewBag.Title = Model.Content.KataKata.Val;
+}
+
+<table class="table table-bordered table-condensed">
+    <thead>
+    <tr>
+        <th>Field</th>
+        <th>Value</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Kata-Kata</td>
+        <td>@Model.Content.KataKata.Val</td>
+    </tr>
+    <tr>
+        <td>When it happen</td>
+        <td>@Model.Content.MagicUtc.Val</td>
+    </tr>
+    </tbody>
+</table>

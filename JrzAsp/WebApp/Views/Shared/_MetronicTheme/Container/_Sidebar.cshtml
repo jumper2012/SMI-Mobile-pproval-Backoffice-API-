@@ -1,0 +1,73 @@
+﻿@using WebApp.Features.MetronicTheme
+@using JrzAsp.Lib.ProtoCms
+@using JrzAsp.Lib.ProtoCms.Core.Models
+@using JrzAsp.Lib.ProtoCms.Vue.Services
+@{
+    var dp = ProtoEngine.GetDependencyProvider();
+    var cmsContext = ProtoCmsRuntimeContext.Current;
+    var cmsDashUrl = Url.CmsDashUrl();
+    var reqUrl = Request.Url?.AbsolutePath;
+}
+<!-- BEGIN SIDEBAR -->
+<div class="page-sidebar-wrapper">
+    <!-- BEGIN SIDEBAR -->
+    <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+    <!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+    <div class="page-sidebar navbar-collapse collapse">
+        <!-- BEGIN SIDEBAR MENU -->
+        <!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
+        <!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
+        <!-- DOC: Apply "page-sidebar-menu-closed" class right after "page-sidebar-menu" to collapse("page-sidebar-closed" class must be applied to the body element) the sidebar sub menu mode -->
+        <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+        <!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
+        <!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+        <ul class="page-sidebar-menu  page-header-fixed " data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200" style="padding-top: 20px">
+            <!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
+            <li class="sidebar-toggler-wrapper hide">
+                <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+                <div class="sidebar-toggler">
+                    <span></span>
+                </div>
+                <!-- END SIDEBAR TOGGLER BUTTON -->
+            </li>
+            <!-- DOC: To remove the search box from the sidebar you just need to completely remove the below "sidebar-search-wrapper" LI element -->
+            @*@{ Html.RenderPartial("~/Views/Shared/_MetronicTheme/Container/Sidebar/_SearchWrapper.cshtml"); }*@
+            <li class="nav-item @(cmsDashUrl == reqUrl ? "active" : "") start">
+                <a href="@cmsDashUrl" class="nav-link">
+                    <i class="fa fa-home"></i>
+                    <span class="title">CMS Dash</span>
+                </a>
+            </li>
+            @if (Request.IsAuthenticated) {
+                var vueMgr = dp.GetService<IVueManager>();
+                foreach (var cat in vueMgr.SidebarMenuCategories) {
+                    var catMenuItems = vueMgr.SidebarMenuItems
+                        .Where(x => x.CategoryId == cat.Id && x.IsVisible(cmsContext)).ToArray();
+                    if (catMenuItems.Length > 0) {
+                        <li class="heading" data-sidebar-menu-category-id="@cat.Id">
+                            <h3 class="uppercase">@cat.Label</h3>
+                        </li>
+                        foreach (var cmi in catMenuItems) {
+                            <li class="nav-item @(cmi.Href == reqUrl ? "active" : "")" id="@cmi.HtmlId"
+                                class="@cmi.CssClass" data-sidebar-menu-category-id="@cat.Id"
+                                data-sidebar-menu-item-id="@cmi.Id">
+                                <a href="@cmi.Href" class="nav-link" target="@cmi.HtmlTarget">
+                                    @if (!string.IsNullOrWhiteSpace(cmi.IconCssClass)) {
+                                        <i class="@cmi.IconCssClass"></i>
+                                    } else {
+                                        <i class="fa fa-link"></i>
+                                    }
+
+                                    <span class="title">@cmi.Label</span>
+                                </a>
+                            </li>
+                        }
+                    }
+                }
+            }
+        </ul>
+        <!-- END SIDEBAR MENU -->
+    </div>
+    <!-- END SIDEBAR -->
+</div>
+<!-- END SIDEBAR -->

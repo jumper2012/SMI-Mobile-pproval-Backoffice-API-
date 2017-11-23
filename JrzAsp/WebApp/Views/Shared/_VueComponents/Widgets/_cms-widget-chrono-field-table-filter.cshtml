@@ -1,0 +1,74 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div>
+            <div class="well well-sm" v-for="(fit, idx) in formObject.Items" :key="idx">
+                <div class="row">
+                    <div class="col-xs-10">
+                        <div v-show="fit.IsEnabled">
+                            <cms-form-field-checkbox :form-object="fit" value-path="IsNullValue"
+                                                     yes-label="Null datetime value"
+                                                     no-label="Non-null datetime value"></cms-form-field-checkbox>
+                            <cms-form-field-datetime v-show="!fit.IsNullValue"
+                                                   :form-object="fit" value-path="MinDateTime" :picker-kind="fit.VueProps.pickerKind"
+                                                   :help-text="getHelpText(fit.VueProps.helpText, true)"
+                                                   :label="'Min ' + fit.VueProps.label"></cms-form-field-datetime>
+                            <cms-form-field-datetime v-show="!fit.IsNullValue"
+                                                   :form-object="fit" value-path="MaxDateTime" :picker-kind="fit.VueProps.pickerKind"
+                                                   :help-text="getHelpText(fit.VueProps.helpText, false)"
+                                                   :label="'Max ' + fit.VueProps.label"></cms-form-field-datetime>
+                            <cms-form-field-checkbox v-show="!fit.IsNullValue"
+                                                     :form-object="fit" value-path="GreaterThanOrEqualToMin"
+                                                     yes-label="( >= ) Greater than or equal to min"
+                                                     no-label="( > ) Greater than min"></cms-form-field-checkbox>
+                            <cms-form-field-checkbox v-show="!fit.IsNullValue"
+                                                     :form-object="fit" value-path="LessThanOrEqualToMax"
+                                                     yes-label="( <= ) Less than or equal to max"
+                                                     no-label="( < ) Less than max"></cms-form-field-checkbox>
+                        </div>
+                        <label v-show="!fit.IsEnabled" v-html="fit.VueProps.label"></label>
+                    </div>
+                    <div class="col-xs-2 text-right">
+                        <cms-widget-toggle-button size="xs" yes-label="Enabled" no-label="Disabled"
+                                                  v-model="fit.IsEnabled"></cms-widget-toggle-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var ffm = protoCms.mixins.formFieldMixin;
+            var comp = {
+                name: 'cms-widget-chrono-field-table-filter',
+                template: '#@tplId',
+                mixins: [ffm],
+                data: function() {
+                    return {}
+                },
+                computed: {
+                    inputVal: {
+                        get: function() {
+                            return this.getFormValue();
+                        },
+                        set: function(newVal) {
+                            this.setFormValue(newVal);
+                        }
+                    }
+                },
+                methods: {
+                    getHelpText: function (ht, isMin) {
+                        var extra = 'If empty then ' + (isMin ? 'min' : 'max') + ' means NOW';
+                        return ht ? ht + '; ' + extra : extra;
+                    }
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

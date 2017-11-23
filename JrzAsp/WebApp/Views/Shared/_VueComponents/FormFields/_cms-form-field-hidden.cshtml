@@ -1,0 +1,40 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <input type="hidden" v-model="inputVal" :data-help-text="helpText" :data-label="label" :data-validation-errors="inputErrorsAsString"/>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var ffm = protoCms.mixins.formFieldMixin;
+            var comp = {
+                name: 'cms-form-field-hidden',
+                mixins: [ffm],
+                template: '#@tplId',
+                data: function() {
+                    return {}
+                },
+                computed: {
+                    inputVal: {
+                        get: function() {
+                            return this.getFormValue();
+                        },
+                        set: function(newVal) {
+                            this.setFormValue(newVal);
+                        }
+                    },
+                    inputErrorsAsString: function() {
+                        if (!this.inputErrors) {
+                            return null;
+                        }
+                        return this.inputErrors.join('; ');
+                    }
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

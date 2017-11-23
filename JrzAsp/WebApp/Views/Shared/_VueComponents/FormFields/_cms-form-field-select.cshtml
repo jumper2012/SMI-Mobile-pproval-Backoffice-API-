@@ -1,0 +1,402 @@
+﻿@using JrzAsp.Lib.TypeUtilities
+@using WebApp.Features.MetronicTheme
+@{
+    var tplId = $"vue-tpl-{Randomer.Self.Next()}";
+}
+@using (Html.AtEndPagePluginsScripts()) {
+    <script type="text/x-template" id="@tplId">
+        <div class="form-group">
+            <label v-html="label"></label>
+            <div v-if="!isMultiSelect">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="button" @@click="toggleShowPicker()">
+                            Select <i class="fa fa-list"></i>
+                        </button>
+                        <button class="btn btn-default" type="button" v-if="isLoading">
+                            <i class="fa fa-spin fa-spinner"></i>
+                        </button>
+                    </span>
+                    <div v-if="chosenOption" class="form-control form-control-static">
+                        <div v-if="!chosenOption.Vues || chosenOption.Vues.length === 0">
+                                    {{ chosenOption.Label }}
+                        </div>
+                        <div v-else>
+                            <component v-for="(ptdtVue, pvIdx) in chosenOption.Vues" :key="pvIdx" :is="ptdtVue.Name"
+                                        v-bind="getPropsWithoutDollarType(ptdtVue.Props)"></component>
+                        </div>
+                    </div>
+                    <div v-else class="form-control form-control-static">
+                        <em>-n/a-</em>
+                    </div>
+                    <span class="input-group-btn">
+                        <button class="btn btn-warning" type="button" @@click="clearChosenOption()">
+                            Clear <i class="fa fa-close"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div v-else>
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="button" @@click="toggleShowPicker()">
+                            Select <i class="fa fa-list"></i>
+                        </button>
+                        <button class="btn green" type="button" @@click="toggleShowChosen()">
+                            View Selected <i class="fa fa-eye"></i>
+                        </button>
+                        <button class="btn btn-default" type="button" v-if="isLoading">
+                            <i class="fa fa-spin fa-spinner"></i>
+                        </button>
+                    </span>
+                    <div class="form-control form-control-static">
+                        Selected {{ addedObjects.length }} item{{ addedObjects.length > 1 ? 's' : '' }}
+                    </div>
+                    <span class="input-group-btn">
+                        <button class="btn btn-warning" type="button" @@click="clearChosenOption()">
+                            Clear <i class="fa fa-close"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div v-if="isMultiSelect" v-show="chosenShown" class="well">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <cms-widget-modifier-errors :error-object="loadError" title=""/>
+                        <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+                        <em v-show="addedObjects.length === 0">None selected.</em>
+                        <table class="table table-condensed table-striped table-bordered" v-show="addedObjects.length > 0">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Options</th>
+                                    <th>Reorder</th>
+                                    <th>Select/Unselect</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(ptdt, idx) in addedObjects" :key="ptdt.Value" :data-select-field-option-value="ptdt.Value">
+                                    <td>{{ idx + pickerTable.StartNumbering }}.</td>
+                                    <td>
+                                        <div v-if="!ptdt.Vues || ptdt.Vues.length === 0">
+                                            {{ ptdt.Label }}
+                                        </div>
+                                        <div v-else>
+                                            <component v-for="(ptdtVue, pvIdx) in ptdt.Vues" :key="pvIdx" :is="ptdtVue.Name"
+                                                        v-bind="getPropsWithoutDollarType(ptdtVue.Props)"></component>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-warning btn-circle btn-xs" @@click="moveChooseOption(idx, true)">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-warning btn-circle btn-xs" @@click="moveChooseOption(idx, false)">
+                                            <i class="fa fa-chevron-down"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn green btn-circle btn-xs" @@click="removeChooseOption(ptdt)">
+                                            Checked <i class="fa fa-check-square-o"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div v-show="pickerShown" class="well">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <cms-widget-modifier-errors :error-object="loadError" title=""/>
+                        <i class="fa fa-spin fa-spinner" v-show="isLoading"></i>
+                        <div class="form-group">
+                            <label>
+                                Search
+                                <span class="small text-muted">please click 'Refresh' button after changing search keywords.</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" v-model="pickerSearchKeywords"/>
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary" type="button" @@click="loadData()">
+                                        Refresh <i class="fa fa-refresh"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <table class="table table-condensed table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>No.</th><th>Options</th><th>Select</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(ptdt, idx) in pickerTable.Data" :key="ptdt.Value" :data-select-field-option-value="ptdt.Value">
+                                    <td>{{ idx + pickerTable.StartNumbering }}.</td>
+                                    <td>
+                                        <div v-if="!ptdt.Vues || ptdt.Vues.length === 0">
+                                            {{ ptdt.Label }}
+                                        </div>
+                                        <div v-else>
+                                            <component v-for="(ptdtVue, pvIdx) in ptdt.Vues" :key="pvIdx" :is="ptdtVue.Name"
+                                                        v-bind="getPropsWithoutDollarType(ptdtVue.Props)"></component>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div v-if="!isMultiSelect">
+                                            <button type="button" class="btn btn-default btn-xs btn-circle" @@click="chooseOption(ptdt)" v-if="!hasChosen(ptdt)">
+                                                Unchecked <i class="fa fa-square-o"></i>
+                                            </button>
+                                            <button type="button" class="btn green btn-circle btn-xs" @@click="clearChosenOption()" v-else>
+                                                Checked <i class="fa fa-check-square-o"></i>
+                                            </button>
+                                        </div>
+                                        <div v-else>
+                                            <button type="button" class="btn btn-default btn-xs btn-circle" @@click="addChooseOption(ptdt)" v-if="!hasChosen(ptdt)">
+                                                Unchecked <i class="fa fa-square-o"></i>
+                                            </button>
+                                            <button type="button" class="btn green btn-circle btn-xs" @@click="removeChooseOption(ptdt)" v-else>
+                                                Checked <i class="fa fa-check-square-o"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <ul class="pagination">
+                            <li v-for="pg in pickerTable.TotalPage" :class="pg === pickerTable.CurrentPage ? 'active' : ''">
+                                <a href="#" @@click.stop.prevent="changePage(pg)">{{ pg }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-default btn-circle btn-xs" @@click="toggleShowPicker()">
+                        Hide <i class="fa fa-chevron-up"></i>
+                    </button>
+                </div>
+            </div>
+            <span class="help-block" v-html="helpText"></span>
+            <span class="help-block text-danger" v-for="(err, idx) in inputErrors" :key="idx">{{ err }}</span>
+        </div>
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var apiBase = protoCms.apiBasePath;
+            var putils = protoCms.utils;
+            var ffm = protoCms.mixins.formFieldMixin;
+            var comp = {
+                name: 'cms-form-field-select',
+                template: '#@tplId',
+                mixins: [ffm],
+                props: ['isMultiSelect', 'optionsHandlerId', 'optionsHandlerParam'],
+                data: function() {
+                    return {
+                        addedObjects: [],
+                        pickerSearchKeywords: '',
+                        pickerTable: {
+                            CurrentPage: 1,
+                            TotalPage: 1,
+                            StartNumbering: 1,
+                            GlobalCount: 0,
+                            CurrentCount: 0,
+                            Offset: 0,
+                            Limit: 30,
+                            Data: []
+                        },
+                        loadError: null,
+                        isLoading: false,
+                        pickerShown: false,
+                        chosenShown: false,
+                        inputValWatcherEnabled: true
+                    };
+                },
+                computed: {
+                    // { Value, Label, Vues }
+                    inputVal: {
+                        get: function () {
+                            var fval = this.getFormValue();
+                            if (!fval) {
+                                fval = [];
+                                this.setFormValue(fval);
+                            }
+                            return fval;
+                        },
+                        set: function (newVal) {
+                            if (!newVal) {
+                                newVal = [];
+                            }
+                            this.setFormValue(newVal);
+                        }
+                    },
+                    chosenOption: function() {
+                        if (!this.addedObjects || this.addedObjects.length === 0) {
+                            return null;
+                        }
+                        return this.addedObjects[0];
+                    }
+                },
+                watch: {
+                    inputVal: function () {
+                        if (!this.inputValWatcherEnabled) return;
+                        this.loadExisting();
+                    }
+                },
+                methods: {
+                    loadExisting: function () {
+                        var self = this;
+                        self.isLoading = true;
+                        var optVals = [];
+                        _.forEach(self.inputVal,
+                            function (val, idx) {
+                                optVals.push(val);
+                            });
+                        if (optVals.length === 0) {
+                            self.isLoading = false;
+                            return null;
+                        }
+                        var targetUrl = apiBase + '/select-field-options/' + self.optionsHandlerId + '/get-display-multi';
+                        return putils.callApi({
+                            url: targetUrl,
+                            method: 'post',
+                            data: {
+                                OptionValues: optVals,
+                                HandlerParam: putils.getdef(self.optionsHandlerParam, '')
+                            }
+                        }).then(function (data) {
+                            self.addedObjects = [];
+                            _.forEach(data,
+                                function(val, idx) {
+                                    self.addedObjects.push(val);
+                                });
+                            self.updateInputVal();
+                            self.loadError = null;
+                            self.isLoading = false;
+                        }, function (err) {
+                            self.loadError = err;
+                            console.log('Error when loading select field options for handler id ' +
+                                self.optionsHandlerId +
+                                ', and param ' +
+                                self.optionsHandlerParam);
+                            self.isLoading = false;
+                        });
+                    },
+                    loadData: function () {
+                        var self = this;
+                        self.isLoading = true;
+                        var targetUrl = apiBase + '/select-field-options/' + self.optionsHandlerId + '/get-all';
+                        var reqDat = {
+                            Search: putils.getdef(self.pickerSearchKeywords, ''),
+                            Page: self.pickerTable.CurrentPage,
+                            Limit: self.pickerTable.Limit,
+                            HandlerParam: putils.getdef(self.optionsHandlerParam, '')
+                        };
+                        return putils.callApi({
+                            url: targetUrl,
+                            method: 'post',
+                            data: reqDat
+                        }).then(function (data) {
+                                self.pickerTable = data;
+                                self.loadError = null;
+                                self.isLoading = false;
+                            },
+                            function(err) {
+                                self.loadError = err;
+                                console.log('Error when loading select field options for handler id ' +
+                                    self.optionsHandlerId +
+                                    ', and param ' +
+                                    self.optionsHandlerParam);
+                                self.isLoading = false;
+                            });
+                    },
+                    updateInputVal: function() {
+                        var self = this;
+                        self.inputValWatcherEnabled = false;
+                        self.inputVal = [];
+                        _.forEach(self.addedObjects,
+                            function(val, idx) {
+                                self.inputVal.push(val.Value);
+                            });
+                        Vue.nextTick(function() {
+                            self.inputValWatcherEnabled = true;
+                        });
+                    },
+                    chooseOption: function (optObj) {
+                        this.addedObjects = [optObj];
+                        this.updateInputVal();
+                    },
+                    addChooseOption: function (optObj) {
+                        if (this.hasChosen(optObj)) return;
+                        this.addedObjects.push(optObj);
+                        this.updateInputVal();
+                    },
+                    removeChooseOption: function (optObj) {
+                        var changedAdded = _.filter(this.addedObjects, function (ao) {
+                            return ao.Value !== optObj.Value;
+                        });
+                        this.addedObjects = changedAdded;
+                        this.updateInputVal();
+                    },
+                    hasChosen: function (optObj) {
+                        for (var i = 0; i < this.addedObjects.length; i++) {
+                            if (this.addedObjects[i].Value === optObj.Value) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    clearChosenOption: function() {
+                        var self = this;
+                        self.addedObjects = [];
+                        self.updateInputVal();
+                    },
+                    moveChooseOption: function(idx, isUp) {
+                        var self = this;
+                        if (self.addedObjects.length === 0) return;
+                        if (idx === 0 && isUp) return;
+                        if (idx === self.addedObjects.length - 1 && !isUp) return;
+                        var temp;
+                        if (isUp) {
+                            temp = self.addedObjects[idx - 1];
+                            Vue.set(self.addedObjects, idx - 1, self.addedObjects[idx]);
+                            Vue.set(self.addedObjects, idx, temp);
+                        } else {
+                            temp = self.addedObjects[idx + 1];
+                            Vue.set(self.addedObjects, idx + 1, self.addedObjects[idx]);
+                            Vue.set(self.addedObjects, idx, temp);
+                        }
+                        self.updateInputVal();
+                    },
+                    changePage: function(pg) {
+                        var self = this;
+                        self.pickerTable.CurrentPage = pg;
+                        self.loadData();
+                    },
+                    toggleShowPicker: function() {
+                        this.pickerShown = !this.pickerShown;
+                        this.chosenShown = false;
+                        if (this.pickerShown && this.pickerTable.Data.length === 0) {
+                            this.loadData();
+                        }
+                    },
+                    toggleShowChosen: function() {
+                        this.chosenShown = !this.chosenShown;
+                        this.pickerShown = false;
+                    }
+                },
+                created: function () {
+                    this.loadExisting();
+                }
+            };
+            Vue.component(comp.name, comp);
+        });
+    </script>
+}

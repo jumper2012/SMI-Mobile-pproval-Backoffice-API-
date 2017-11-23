@@ -1,0 +1,34 @@
+﻿@using JrzAsp.Lib.RazorTools
+@using WebApp.Features.MetronicTheme
+<!-- BEGIN GLOBAL MANDATORY STYLES -->
+@Html.RenderSection(MetronicLayoutSections.STYLE_0A_GLOBAL_MANDATORY)
+<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all" rel="stylesheet" type="text/css" />
+<link href="~/Content/MetronicTheme/assets/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/MetronicTheme/assets/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/MetronicTheme/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/MetronicTheme/assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css" />
+@Styles.Render("~/Content/bootstrap/responsive-text-alignment")
+@Html.RenderSection(MetronicLayoutSections.STYLE_0B_GLOBAL_MANDATORY)
+<!-- END GLOBAL MANDATORY STYLES -->
+<!-- BEGIN PAGE LEVEL STYLES -->
+@Html.RenderSection(MetronicLayoutSections.STYLE_1A_PAGE_LEVEL)
+<link href="~/Content/MetronicTheme/assets/global/plugins/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/MetronicTheme/assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" type="text/css" />
+<link href="~/Scripts/redactor/redactor.min.css" rel="stylesheet" type="text/css" />
+@Html.RenderSection(MetronicLayoutSections.STYLE_1B_PAGE_LEVEL)
+<!-- END PAGE LEVEL STYLES -->
+<!-- BEGIN THEME GLOBAL STYLES -->
+@Html.RenderSection(MetronicLayoutSections.STYLE_2A_THEME_GLOBAL)
+<link href="~/Content/MetronicTheme/assets/global/css/components-md.min.css" rel="stylesheet" id="style_components" type="text/css" />
+<link href="~/Content/MetronicTheme/assets/global/css/plugins-md.min.css" rel="stylesheet" type="text/css" />
+@Html.RenderSection(MetronicLayoutSections.STYLE_2B_THEME_GLOBAL)
+<!-- END THEME GLOBAL STYLES -->
+<!-- BEGIN THEME LAYOUT STYLES -->
+@Html.RenderSection(MetronicLayoutSections.STYLE_3A_THEME_LAYOUT)
+<link href="~/Content/MetronicTheme/assets/layouts/layout/css/layout.min.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/MetronicTheme/assets/layouts/layout/css/themes/darkblue.min.css" rel="stylesheet" type="text/css" id="style_color" />
+<link href="~/Content/MetronicTheme/assets/layouts/layout/css/custom.min.css" rel="stylesheet" type="text/css" />
+@Html.RenderSection(MetronicLayoutSections.STYLE_3B_THEME_LAYOUT)
+<!-- END THEME LAYOUT STYLES -->
+@Styles.Render("~/Content/metronic-theme/custom-css")
+@Html.RenderSection(MetronicLayoutSections.STYLE_9Z_OTHERS)
